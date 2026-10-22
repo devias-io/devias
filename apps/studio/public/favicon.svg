@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="32" height="32" role="img" aria-label="Devias">
+  <rect width="160" height="160" rx="38" fill="#9fe870"/>
+  <g fill="#0d2b1b" transform="translate(27.5 20) scale(1.875)">
+    <path d="M43 38A18 18 0 1 0 7 38A18 18 0 1 0 43 38ZM35 38A10 10 0 1 1 15 38A10 10 0 1 1 35 38Z" fill-rule="evenodd"/>
+    <path d="M41 15L49 8V52H41Z"/>
+  </g>
+</svg>

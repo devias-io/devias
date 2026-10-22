@@ -1,0 +1,52 @@
+{
+  "name": "@devias/mod-quotes",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Quotes module: quotes and their items for the CRM's deals, a Deal quotes block, and recalculate / create-from-deal actions.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    "./studio": "./src/studio/index.ts",
+    "./manifest": "./src/manifest/index.ts",
+    "./server": "./src/server/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@devias/core": "workspace:*",
+    "@devias/mod-crm": "workspace:*",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "@devias/server": "workspace:*",
+    "@devias/studio": "workspace:*",
+    "@devias/ui": "workspace:*",
+    "react": ">=19"
+  },
+  "peerDependenciesMeta": {
+    "@devias/server": {
+      "optional": true
+    },
+    "@devias/studio": {
+      "optional": true
+    },
+    "@devias/ui": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@devias/sdk": "workspace:*",
+    "@devias/server": "workspace:*",
+    "@devias/studio": "workspace:*",
+    "@devias/ui": "workspace:*",
+    "@testing-library/react": "catalog:",
+    "@types/react": "catalog:",
+    "jsdom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

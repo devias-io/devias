@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+coverage/
+.data/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+.turbo/
+.vite/
+*.tsbuildinfo
+.migration/
+.smoke/
+tmp/

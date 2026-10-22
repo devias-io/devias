@@ -1,0 +1,34 @@
+{
+  "name": "@devias/mod-payment-stripe",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Stripe payment provider: customers pay invoices online through a Stripe payment link, and the payment is recorded on the invoice. Server-only.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    "./manifest": "./src/manifest/index.ts",
+    "./server": "./src/server/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@devias/core": "workspace:*",
+    "@devias/mod-invoicing": "workspace:*",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "@devias/server": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@devias/server": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

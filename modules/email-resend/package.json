@@ -1,0 +1,33 @@
+{
+  "name": "@devias/mod-email-resend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Resend email provider: an API key connection, an action that sends email, and delivery events from its webhook. Server-only.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    "./manifest": "./src/manifest/index.ts",
+    "./server": "./src/server/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@devias/core": "workspace:*",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "@devias/server": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@devias/server": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

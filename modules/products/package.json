@@ -1,0 +1,45 @@
+{
+  "name": "@devias/mod-products",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Products module: products and their prices (one-time or recurring), with a Prices block on the product page.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    "./studio": "./src/studio/index.ts",
+    "./manifest": "./src/manifest/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@devias/core": "workspace:*",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "@devias/studio": "workspace:*",
+    "@devias/ui": "workspace:*",
+    "react": ">=19"
+  },
+  "peerDependenciesMeta": {
+    "@devias/studio": {
+      "optional": true
+    },
+    "@devias/ui": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@devias/sdk": "workspace:*",
+    "@devias/studio": "workspace:*",
+    "@devias/ui": "workspace:*",
+    "@testing-library/react": "catalog:",
+    "@types/react": "catalog:",
+    "jsdom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

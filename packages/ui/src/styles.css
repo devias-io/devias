@@ -1,0 +1,380 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Scan this package's own components for utility classes even when the consumer's
+   Tailwind root is a different workspace (paths are relative to this file). */
+@source "./";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ---------------------------------------------------------------------------
+ * shadcn preset base-nova, tuned: Inter at its optical sizes for everything, regular-weight titles that are large and tight,
+ * a 14/15/16px text scale, black actions on white, cool grey fills for what is secondary, soft 24px and 32px surfaces and
+ * an electric lime kept for the accent.
+ * ------------------------------------------------------------------------ */
+@theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Headings and the figures a page leads with (a total, an amount due). The same family as the body, so the two
+     read as one voice; the heading scale below sets their weight and tracking. */
+  --font-heading: var(--font-sans);
+  --font-display: var(--font-heading);
+
+  /* A slow drift for things that float, such as the glass panes on the sign-in image. */
+  --animate-float: float 9s ease-in-out infinite;
+
+  /* Inter is variable, so the steps are ours and light: titles and figures are regular, emphasis comes from size and ink.
+     Medium is for labels and row titles, semibold for buttons, bold only if something truly must shout. */
+  --font-weight-medium: 450;
+  --font-weight-semibold: 500;
+  --font-weight-bold: 600;
+
+  /* The scale the app reads at: 14px for captions and meta, 15px for the interface and its tables, 16px for text
+     you read. Components set sizes with these steps, so the whole app moves when one does. */
+  --text-xs: 0.875rem;
+  --text-xs--line-height: calc(1.25 / 0.875);
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: calc(1.375 / 0.9375);
+  --text-md: 1rem;
+  --text-md--line-height: 1.5;
+
+  /* Headings, a step heavier and a little tighter than the body. `text-h2` etc. set all four at once; pair them with
+     `font-heading`. */
+  --text-h1: 1.75rem;
+  --text-h1--line-height: 1.15;
+  --text-h1--letter-spacing: -0.035em;
+  --text-h1--font-weight: 400;
+  --text-h2: 1.375rem;
+  --text-h2--line-height: 1.25;
+  --text-h2--letter-spacing: -0.03em;
+  --text-h2--font-weight: 400;
+  /* The title of a list or settings page: the same size on every page. A record's own title is `text-record`. */
+  --text-title: 1.5rem;
+  --text-title--line-height: 1.2;
+  --text-title--letter-spacing: -0.028em;
+  --text-title--font-weight: 400;
+  /* The title at the top of a record (a person, a company, a deal): the largest thing on the page, still modest. */
+  --text-record: 1.5rem;
+  --text-record--line-height: 1.2;
+  --text-record--letter-spacing: -0.025em;
+  --text-record--font-weight: 400;
+  /* A section's heading on a record, and a card's title one step down. */
+  --text-heading: 1.25rem;
+  --text-heading--line-height: 1.3;
+  --text-heading--letter-spacing: -0.02em;
+  --text-heading--font-weight: 450;
+  --text-sub: 1rem;
+  --text-sub--line-height: 1.4;
+  --text-sub--letter-spacing: -0.012em;
+  --text-sub--font-weight: 450;
+  --text-h3: 1.1875rem;
+  --text-h3--line-height: 1.4;
+  --text-h3--letter-spacing: -0.015em;
+  --text-h3--font-weight: 450;
+  --text-h4: 1rem;
+  --text-h4--line-height: 1.5;
+  --text-h4--letter-spacing: -0.008em;
+  --text-h4--font-weight: 450;
+
+  --color-subtle: var(--subtle);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-subtle-border: var(--subtle-border);
+  --color-strong-border: var(--strong-border);
+  --color-background-hover: var(--background-hover);
+  --color-background-secondary: var(--background-secondary);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
+  --color-interactive-soft: var(--interactive-soft);
+  /* The dark "signal" surfaces: a card that shows one figure and its trend, its tiles and its controls. They are
+     dark in both themes. */
+  --color-signal: var(--signal);
+  --color-signal-foreground: var(--signal-foreground);
+  --color-signal-tile: var(--signal-tile);
+  --color-signal-control: var(--signal-control);
+  --color-signal-negative: var(--signal-negative);
+  --color-brand-strong: var(--brand-strong);
+  --color-avatar: var(--avatar);
+  --color-avatar-foreground: var(--avatar-foreground);
+  --color-brand-soft: var(--brand-soft);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-card-border: var(--card-border);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+
+  /* Few radii, so nothing looks like it came from another app: 4px for tiny marks (a checkbox, a key cap), 8px for
+     everything the hand touches and for small floating panels (menus, tooltips), 16px for tiles (an icon tile, a hovered
+     row), 24px for panels (a card, a stat, the right rail, a dialog), 32px for the biggest surfaces (a stage, a media
+     card), and full for pills (buttons, chips, tabs). The steps between are the same value on purpose, so `rounded-md`
+     and `rounded-lg` cannot drift apart. */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 8px;
+  --radius-lg: 8px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-3xl: 32px;
+  --radius-4xl: 32px;
+}
+
+/* The diagonal hairlines on a black stat card, running up to the right. */
+@utility stripes {
+  background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 16px);
+  /* Dark is flat: a card is its fill, with no texture and no outline. */
+  .dark & {
+    background-image: none;
+  }
+}
+
+/* Scenic grounds for a stage card: soft blurred landscapes in meadow, amber and forest, with no image to load. A card
+   floats on one, over the same colours in light and dark. */
+@utility scene-meadow {
+  background:
+    radial-gradient(70% 50% at 50% 0%, #f7efd6 0%, rgba(247, 239, 214, 0) 70%),
+    radial-gradient(60% 55% at 14% 62%, #7d8a2f 0%, rgba(125, 138, 47, 0) 72%),
+    radial-gradient(70% 60% at 86% 90%, #1f3328 0%, rgba(31, 51, 40, 0) 75%),
+    linear-gradient(180deg, #eadfb8 0%, #8a8a3a 46%, #1d2f24 100%);
+}
+@utility scene-amber {
+  background:
+    radial-gradient(60% 45% at 40% 0%, #f2d6a6 0%, rgba(242, 214, 166, 0) 70%),
+    radial-gradient(60% 60% at 18% 70%, #b8672b 0%, rgba(184, 103, 43, 0) 72%),
+    radial-gradient(60% 60% at 90% 30%, #2f6a35 0%, rgba(47, 106, 53, 0) 70%),
+    linear-gradient(180deg, #e8c88f 0%, #a65c2b 52%, #2a3a24 100%);
+}
+@utility scene-forest {
+  background:
+    radial-gradient(60% 50% at 30% 20%, #8fa23a 0%, rgba(143, 162, 58, 0) 70%),
+    radial-gradient(70% 60% at 80% 80%, #0f2418 0%, rgba(15, 36, 24, 0) 75%),
+    linear-gradient(180deg, #5f7424 0%, #2c4423 55%, #0d1a12 100%);
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Neutral greys: a white canvas with white cards, a near-white sidebar, ink at #141414, a grey #6b6b66 for what is secondary and soft greys for the rest. */
+:root {
+  --background: #ffffff;
+  --foreground: #141414;
+  --card: #ffffff;
+  --card-foreground: #141414;
+  --popover: #ffffff;
+  --popover-foreground: #3b3b3b;
+  --primary: #141414;
+  --primary-foreground: #fafafa;
+  /* The app's accent: primary actions, selection, the line of a trend. Same value in both themes, with ink on it.
+     `brand-strong` is the lime dark enough to read as a line or text on light surfaces; `brand-soft` a pale wash. */
+  --brand: #9fe870;
+  --brand-foreground: #111111;
+  --brand-strong: #4a9d26;
+  /* A user without a picture: their initials in ink on this amber, the same in both themes. */
+  --avatar: #eab32a;
+  --avatar-foreground: #111111;
+  --brand-soft: #ecfae2;
+  --secondary: #e8ebeb;
+  --secondary-foreground: #141414;
+  --muted: #f4f5f5;
+  --muted-foreground: #6b6b66;
+  --accent: #f3f3f3;
+  --accent-foreground: #141414;
+  --destructive: #d0413d;
+  --border: #e8e8e8;
+  /* The outline of a card or section: the divider colour, a step softer in dark. */
+  --card-border: #e8e8e8;
+  --input: #e3e3e3;
+  --ring: #9a9a9a;
+  --chart-1: #4a9d26;
+  --chart-2: #77c448;
+  --chart-3: #9fe870;
+  --chart-4: #737373;
+  --chart-5: #b5b5b5;
+  --radius: 0.625rem;
+  --sidebar: #fafafa;
+  --sidebar-foreground: #3f3f3f;
+  --sidebar-primary: #141414;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #eeeeee;
+  --sidebar-accent-foreground: #141414;
+  --sidebar-border: #e8e8e8;
+  --sidebar-ring: #9a9a9a;
+
+  /* Quieter and louder neighbours of the base tokens: placeholder text, hairlines, row hover, selection. */
+  --subtle: #fafafa;
+  --subtle-foreground: #9a9a9a;
+  --subtle-border: #f0f0f0;
+  --strong-border: #d6d6d6;
+  --background-hover: #f4f5f5;
+  --background-secondary: #f5f6f6;
+  --highlight: #155dfc;
+  --highlight-foreground: #ffffff;
+  --interactive-soft: #eff6ff;
+
+  --signal: #0e0e0e;
+  --signal-foreground: #f7f7f7;
+  --signal-tile: #181818;
+  --signal-control: #1f1f1f;
+  /* Failures on a signal card, which is dark in both themes. */
+  --signal-negative: #f66d67;
+
+  /* Status colours the preset does not define (Tailwind green-600 / amber-600). */
+  --success: oklch(0.627 0.194 149.214);
+  --warning: oklch(0.666 0.179 58.318);
+
+  /* Shell geometry: the top bar, the sidebar header and panel headers share one height so they line up. */
+  --topbar-h: 3.5rem;
+  --sidebar-w: 15rem;
+  --sidebar-w-collapsed: 3rem;
+}
+
+/* Dark: a pure neutral ladder, near-black and unwarmed. The sidebar is the darkest step, the page one step up, a card one
+   more, and fills and borders the two after that, so depth comes from the steps and not from shadows or outlines: a
+   card has only a hairline outline in dark (`--card-border`). Text is a soft
+   off-white, never pure white. Buttons, switches and checkboxes are white; the lime stays for data (charts) and the logo. */
+.dark {
+  --background: #111111;
+  --foreground: #e6e6e6;
+  --card: #181818;
+  --card-foreground: #e6e6e6;
+  --popover: #1c1c1c;
+  --popover-foreground: #d9d9d9;
+  --primary: #ececec;
+  --primary-foreground: #111111;
+  --brand: #9fe870;
+  --brand-foreground: #111111;
+  --brand-strong: #9fe870;
+  --avatar: #eab32a;
+  --avatar-foreground: #111111;
+  --brand-soft: #2b3424;
+  --secondary: #262626;
+  --secondary-foreground: #e6e6e6;
+  --muted: #202020;
+  --muted-foreground: #a3a3a3;
+  --accent: #262626;
+  --accent-foreground: #f0f0f0;
+  --destructive: #f66d67;
+  --border: #252525;
+  --card-border: #2a2a2a;
+  --input: #2c2c2c;
+  --ring: #5a5a5a;
+  --chart-1: #9fe870;
+  --chart-2: #74b747;
+  --chart-3: #467821;
+  --chart-4: #8a8a8a;
+  --chart-5: #4a4a4a;
+  --sidebar: #090909;
+  --sidebar-foreground: #b8b8b8;
+  --sidebar-primary: #9fe870;
+  --sidebar-primary-foreground: #111111;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #f0f0f0;
+  --sidebar-border: #1f1f1f;
+  --sidebar-ring: #5a5a5a;
+
+  --subtle: #141414;
+  --subtle-foreground: #666666;
+  --subtle-border: #1e1e1e;
+  --strong-border: #333333;
+  --background-hover: #1d1d1d;
+  --background-secondary: #0e0e0e;
+  --highlight: #2b7fff;
+  --highlight-foreground: #ffffff;
+  --interactive-soft: #1a2b63;
+
+  --signal: #181818;
+  --signal-foreground: #e6e6e6;
+  --signal-tile: #202020;
+  --signal-control: #262626;
+  --signal-negative: #f66d67;
+
+  /* green-400 / amber-400 */
+  --success: oklch(0.792 0.209 151.711);
+  --warning: oklch(0.828 0.189 84.429);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    /* Scrollbars: thin, rounded and in the page's own ink, quieter until the area under the pointer is hovered. A
+       scroll area that hides its bar (`no-scrollbar`, `[scrollbar-width:none]`) still does. */
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--foreground) 16%, transparent) transparent;
+  }
+  *:hover {
+    scrollbar-color: color-mix(in srgb, var(--foreground) 32%, transparent) transparent;
+  }
+  /* Browsers without `scrollbar-color` get the same bar from the older WebKit pseudo-elements. */
+  @supports not (scrollbar-color: auto) {
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track,
+    ::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      border: 3px solid transparent;
+      border-radius: 9999px;
+      background-clip: content-box;
+      background-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: color-mix(in srgb, var(--foreground) 32%, transparent);
+    }
+  }
+  html {
+    @apply font-sans antialiased;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  /* The stroke of every icon, in one place: Tabler's own 2. Filled icons have no stroke, so this leaves them alone. */
+  .tabler-icon {
+    stroke-width: 2;
+  }
+  /* Selected text in the accent, with its own ink on it. */
+  ::selection {
+    background-color: var(--brand);
+    color: var(--brand-foreground);
+  }
+}

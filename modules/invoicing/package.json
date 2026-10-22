@@ -1,0 +1,54 @@
+{
+  "name": "@devias/mod-invoicing",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Invoicing module: invoices with lines and payments for the CRM's companies and people, a billing tool, Home and record blocks, and recalculate / record-payment actions.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    "./studio": "./src/studio/index.ts",
+    "./manifest": "./src/manifest/index.ts",
+    "./server": "./src/server/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@devias/core": "workspace:*",
+    "@devias/mod-crm": "workspace:*",
+    "@react-pdf/renderer": "catalog:",
+    "sonner": "catalog:",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "@devias/server": "workspace:*",
+    "@devias/studio": "workspace:*",
+    "@devias/ui": "workspace:*",
+    "react": ">=19"
+  },
+  "peerDependenciesMeta": {
+    "@devias/server": {
+      "optional": true
+    },
+    "@devias/studio": {
+      "optional": true
+    },
+    "@devias/ui": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@devias/sdk": "workspace:*",
+    "@devias/server": "workspace:*",
+    "@devias/studio": "workspace:*",
+    "@devias/ui": "workspace:*",
+    "@testing-library/react": "catalog:",
+    "@types/react": "catalog:",
+    "jsdom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

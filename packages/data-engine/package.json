@@ -1,0 +1,31 @@
+{
+  "name": "@devias/data-engine",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Server-side engine: metadata service, DataSource (Postgres JSONB), query compiler, change feed, permissions, module reconciler.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/db/schema/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@devias/core": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "uuid": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@devias/fixtures": "workspace:*",
+    "@electric-sql/pglite": "catalog:",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "pg": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

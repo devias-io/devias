@@ -1,0 +1,35 @@
+{
+  "name": "@devias/ai",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The agent runtime: model client, tool registry, built-in tools, conversation persistence and the resumable turn state machine.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/db/schema/index.ts",
+    "./testing": "./src/testing.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "catalog:",
+    "@ai-sdk/openai": "catalog:",
+    "@anthropic-ai/sdk": "catalog:",
+    "@devias/core": "workspace:*",
+    "@devias/data-engine": "workspace:*",
+    "ai": "catalog:",
+    "drizzle-orm": "catalog:",
+    "uuid": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@devias/fixtures": "workspace:*",
+    "@electric-sql/pglite": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
