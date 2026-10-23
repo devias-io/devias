@@ -11,7 +11,7 @@ Devias is a platform for building operations software around each customer's bus
 - **Work that is not a record.** Tasks (for people and agents, as a list or a board), documents (rich text with comments and @mentions) and notes on records, all linkable from each other.
 - **Workflows.** Automations without code: a trigger (a record change, a manual action on a record, a schedule, or an event a module delivers) and steps that update or create records, run a module's action, notify people or branch, with a run history per workflow.
 - **Notifications.** Part of core: workflows, every module's actions and agents send them, and people read them behind the bell in the studio.
-- **Agents.** An agent is its tool list plus whether each tool asks first. A workspace has a default assistant, makes its own agents (or starts from a template), and modules ship theirs, such as the CRM's Sales agent. Agents work in the context of the workspace's model, take tasks, ask questions with `ask_user`, and draw approval cards for what they want to change.
+- **Agents.** An agent is its tool list plus whether each tool asks first. A workspace has a default assistant, makes its own agents (or starts from a template), and modules ship theirs, such as the CRM's Sales agent. Agents work in the context of the workspace's model, take tasks, ask questions with `ask_user`, and draw approval cards for what they want to change. **Skills** are procedures the workspace (or a module) writes once and agents load only when a request calls for them.
 
 ## Quick start
 

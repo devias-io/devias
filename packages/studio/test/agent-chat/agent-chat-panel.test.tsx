@@ -10,6 +10,7 @@ import {
   agentFixture,
   createFakeClient,
   installLayoutStubs,
+  noSkills,
   recordsFixture,
   schemaFixture,
   TestProviders,
@@ -133,6 +134,7 @@ const scriptedAi = () => {
         updatedAt: null,
       }),
     },
+    skills: noSkills,
     agents: {
       list: async () => [agentFixture()],
       usage: async () => [],

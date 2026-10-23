@@ -28,6 +28,9 @@ export const links = {
   /** An agent's page: by id, or a new one; `tab` picks what it shows. */
   agent: (slug: string, id?: string, tab?: string) =>
     `/workspaces/${seg(slug)}/agents/${id ? seg(id) : 'new'}${tab ? `?tab=${encodeURIComponent(tab)}` : ''}`,
+  skills: (slug: string) => `/workspaces/${seg(slug)}/skills`,
+  /** A skill's page: by id, or a new one. */
+  skill: (slug: string, id?: string) => `/workspaces/${seg(slug)}/skills/${id ? seg(id) : 'new'}`,
   documents: (slug: string) => `/workspaces/${seg(slug)}/documents`,
   document: (slug: string, id: string) => `/workspaces/${seg(slug)}/documents/${seg(id)}`,
   tasks: (slug: string) => `/workspaces/${seg(slug)}/tasks`,

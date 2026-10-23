@@ -27,6 +27,19 @@ export interface ActionsPort {
   invoke(ctx: EngineContext, actionId: string, input: unknown): Promise<unknown>;
 }
 
+/** A skill as `use_skill` returns it. */
+export interface LoadedSkill {
+  id: string;
+  title: string;
+  body: string;
+}
+
+/** Loads the skills the calling agent may use, from the workspace as it is now: an archived skill is gone. */
+export interface SkillsPort {
+  /** By id or by title (any case); none, or two with the same title, is an error that says what to do. */
+  load(ref: string): Promise<LoadedSkill>;
+}
+
 /** What a tool sees while it runs: the caller's engine context and a way to steer the studio. */
 export interface ToolRunContext {
   workspaceId: string;
@@ -42,6 +55,8 @@ export interface ToolRunContext {
   workflows?: WorkflowRunPort;
   /** The host's actions, when it provides them. */
   actions?: ActionsPort;
+  /** The skills of the agent this call is for. */
+  skills?: SkillsPort;
   /** What the person typed into this call's input request: for this run only, never stored or shown to the model. */
   secrets?: Record<string, string>;
   /** The input request the person answered, as it was shown to them. */

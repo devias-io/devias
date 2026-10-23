@@ -5,6 +5,8 @@ import type {
   AiClient,
   AiSettings,
   AiSettingsPatch,
+  AiSkill,
+  AiSkillSummary,
   AiStatus,
   AiTurn,
   Conversation,
@@ -61,6 +63,16 @@ export const createAiApi = (http: HttpClient, ws: string): AiClient => {
       update: (id, patch) => http.patch<AiAgent>(`${base}/agents/${enc(id)}`, patch),
       delete: async (id) => {
         await http.delete(`${base}/agents/${enc(id)}`);
+      },
+    },
+    skills: {
+      list: (opts) =>
+        http.get<AiSkillSummary[]>(`${base}/skills${opts?.includeArchived ? '?includeArchived=true' : ''}`),
+      get: (id) => http.get<AiSkill>(`${base}/skills/${enc(id)}`),
+      create: (input) => http.post<AiSkill>(`${base}/skills`, input),
+      update: (id, patch) => http.patch<AiSkill>(`${base}/skills/${enc(id)}`, patch),
+      delete: async (id) => {
+        await http.delete(`${base}/skills/${enc(id)}`);
       },
     },
   };

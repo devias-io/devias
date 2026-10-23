@@ -150,6 +150,12 @@ export const coreIds = {
     create_agent: 'core.create_agent',
     update_agent: 'core.update_agent',
     archive_agent: 'core.archive_agent',
+    list_skills: 'core.list_skills',
+    get_skill: 'core.get_skill',
+    create_skill: 'core.create_skill',
+    update_skill: 'core.update_skill',
+    archive_skill: 'core.archive_skill',
+    use_skill: 'core.use_skill',
   },
   /** The columns of every object that are no field of it: a view may list or sort by them. */
   fields: {

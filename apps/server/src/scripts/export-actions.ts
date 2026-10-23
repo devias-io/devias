@@ -1,4 +1,4 @@
-import { writeFileSync } from 'node:fs';
+import { existsSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ACTIONS, type AnyActionSpec } from '@devias/core';
@@ -58,6 +58,13 @@ const main = async () => {
 
   const here = path.dirname(fileURLToPath(import.meta.url));
   const target = path.resolve(here, '../../../../docs/reference/actions.mdx');
+
+  if (!existsSync(path.dirname(target))) {
+    console.log(`no ${path.dirname(target)}: the documentation is not here, nothing written`);
+
+    return;
+  }
+
   writeFileSync(target, page);
   console.log(`wrote ${target} (${all.length} actions)`);
 };

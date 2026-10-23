@@ -212,6 +212,7 @@ export const agentFixture = (overrides: Partial<AiAgent> = {}): AiAgent => ({
   description: 'Works with everything in the workspace.',
   instructions: null,
   tools: null,
+  skills: null,
   starterPrompts: [],
   approvalOverrides: {},
   takesTasks: false,
@@ -221,6 +222,21 @@ export const agentFixture = (overrides: Partial<AiAgent> = {}): AiAgent => ({
   updatedAt: '2026-01-01T00:00:00.000Z',
   ...overrides,
 });
+
+/** A workspace with no skills, where none can be written. */
+export const noSkills: AiClient['skills'] = {
+  list: async () => [],
+  get: async () => {
+    throw new DeviasApiError(404, 'NOT_FOUND', 'not found');
+  },
+  create: async () => {
+    throw new DeviasApiError(422, 'MISSING_DEPENDENCY', 'not configured');
+  },
+  update: async () => {
+    throw new DeviasApiError(422, 'MISSING_DEPENDENCY', 'not configured');
+  },
+  delete: async () => {},
+};
 
 const notConfigured = (): AiClient => ({
   status: async () => ({ configured: false, model: '', effort: '', tools: [], canManage: true }),
@@ -253,6 +269,7 @@ const notConfigured = (): AiClient => ({
     },
     delete: async () => {},
   },
+  skills: noSkills,
   settings: {
     get: async () => ({ defaultAgentId: null, updatedAt: null }),
     update: async (patch) => ({

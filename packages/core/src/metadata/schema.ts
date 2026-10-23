@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { IdSchema, ModuleIdSchema } from '../ids';
-import { AgentDefinitionSchema } from '../manifest/agents';
+import { AgentDefinitionSchema, SkillDefinitionSchema } from '../manifest/agents';
 import { BlockDeclarationSchema } from '../manifest/blocks';
 import { ModuleEnginesSchema, ModulePublisherSchema, PolicyDefinitionSchema } from '../manifest/consent';
 import {
@@ -385,6 +385,8 @@ export const InstalledModuleSchema = z
     blocks: z.array(BlockDeclarationSchema).default([]),
     /** The agents the module ships (see `AgentDefinitionSchema`). */
     agents: z.array(AgentDefinitionSchema).default([]),
+    /** The skills the module ships (see `SkillDefinitionSchema`). */
+    skills: z.array(SkillDefinitionSchema).default([]),
     /** What the installed manifest declares: how to connect it, its variables, the actions to call, the events it delivers. */
     connections: z.array(ConnectionProviderSchema).default([]),
     variables: z.array(VariableDefinitionSchema).default([]),

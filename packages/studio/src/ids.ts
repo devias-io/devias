@@ -6,6 +6,7 @@ export const ids = {
     documents: 'studio.documents',
     workflows: 'studio.workflows',
     agents: 'studio.agents',
+    skills: 'studio.skills',
   },
   pages: {
     home: 'studio.home',
@@ -13,5 +14,6 @@ export const ids = {
     documents: 'studio.documents',
     workflows: 'studio.workflows',
     agents: 'studio.agents',
+    skills: 'studio.skills',
   },
 } as const;

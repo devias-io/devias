@@ -109,6 +109,9 @@ export const ids = {
   agents: {
     sales: 'crm.sales',
   },
+  skills: {
+    close_deal: 'crm.close_deal',
+  },
   pages: {
     forecast: 'crm.forecast',
   },

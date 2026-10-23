@@ -25,6 +25,7 @@ import {
   agentFixture,
   createFakeClient,
   installLayoutStubs,
+  noSkills,
   recordsFixture,
   schemaFixture,
   TestProviders,
@@ -160,6 +161,7 @@ const agentAi = (initial: AiAgent[] = [general, sales]) => {
         return { defaultAgentId, updatedAt: null };
       },
     },
+    skills: noSkills,
     agents: {
       usage: async () => usageRows(),
       // Every day empty but today's: two conversations and four replies, 2,400 input and 600 output tokens.
@@ -341,6 +343,7 @@ const crmSchema = () => ({
       core: false,
       blocks: [],
       agents: [],
+      skills: [],
       connections: [],
       variables: [],
       actions: [],
@@ -604,7 +607,12 @@ describe("an agent's page", () => {
 
   it('creates an agent across its tabs, saving everything together from the header', async () => {
     const { agents, navigate, updates } = await setup(() => null);
-    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['General', 'Instructions', 'Tools']);
+    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual([
+      'General',
+      'Instructions',
+      'Tools',
+      'Skills',
+    ]);
     // Nothing to create without a name.
     const create = () => screen.getByRole('button', { name: 'Create agent' }) as HTMLButtonElement;
     expect(create().disabled).toBe(true);
@@ -724,7 +732,7 @@ describe("an agent's page", () => {
       within(document.querySelector('[data-slot="agent-header"]') as HTMLElement)
         .getAllByRole('tab')
         .map((t) => t.textContent);
-    expect(headerTabs()).toEqual(['General', 'Instructions', 'Tools1', 'Usage']);
+    expect(headerTabs()).toEqual(['General', 'Instructions', 'Tools1', 'Skills', 'Usage']);
     // The figure is the tokens of the period, with the split in the legend under it.
     expect(await screen.findByText('3.0k')).toBeTruthy();
     const legend = within(document.querySelector('[data-slot="usage-legend"]') as HTMLElement);
@@ -737,7 +745,7 @@ describe("an agent's page", () => {
     expect(await screen.findByRole('img', { name: 'Tokens per week, last 90 days' })).toBeTruthy();
     cleanup();
     await setup(() => null, { tab: 'usage' });
-    expect(headerTabs()).toEqual(['General', 'Instructions', 'Tools']);
+    expect(headerTabs()).toEqual(['General', 'Instructions', 'Tools', 'Skills']);
     expect(document.querySelector('[data-slot="agent-usage"]')).toBeNull();
   });
 

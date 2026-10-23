@@ -18,6 +18,7 @@ import { recordCountsBlock } from './pages/home/blocks/record-counts';
 import { recordsPages } from './pages/records';
 import { settingsPages } from './pages/settings';
 import { builtinSettingsSections } from './pages/settings/sections';
+import { skillsPages } from './pages/skills';
 import { tasksPages } from './pages/tasks';
 import { workflowsPages } from './pages/workflows';
 import { activityBlock } from './record/blocks/activity';
@@ -72,6 +73,7 @@ export const studio = defineModuleStudio(manifest, {
     ...documentsPages,
     ...workflowsPages,
     ...agentsPages,
+    ...skillsPages,
     ...settingsPages,
   ],
   commands: [

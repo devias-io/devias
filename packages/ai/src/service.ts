@@ -7,6 +7,10 @@ import {
   type AiAgentUsage,
   type AiSettings,
   type AiSettingsPatch,
+  type AiSkill,
+  type AiSkillInput,
+  type AiSkillPatch,
+  type AiSkillSummary,
   type AiStatus,
   type AiTurn,
   activityDays,
@@ -22,6 +26,7 @@ import {
   personOf,
   type ResolveToolCallInput,
   type SendMessageInput,
+  SKILLS_MAX,
   type TaskRun,
   toolOfAction,
 } from '@devias/core';
@@ -39,14 +44,18 @@ import type { ModelClient, TextParam } from './model/types';
 import { contextBlock, linkTargetsOf, type MentionedRecord, schemaDigest } from './prompt/context';
 import { describeTool, sanitizeOverrides } from './runtime/approval';
 import { type AgentProfile, createTurnRuntime, type EventSink } from './runtime/turn';
+import { skillsBlock, skillsOf } from './skills';
 import {
   type AgentRow,
   type AiStore,
   type ConversationRow,
   createAiStore,
+  type SkillRow,
   toAgent,
   toChatMessage,
   toConversation,
+  toSkill,
+  toSkillSummary,
   toTaskRun,
   toTurn,
 } from './store';
@@ -122,6 +131,16 @@ export interface AiService {
     /** Archives the agent (`update` with `archived: false` restores it). */
     delete(ctx: EngineContext, id: string): Promise<void>;
   };
+  /** The workspace's skills: procedures agents load when a request calls for them. `ai.manage` writes and reads them. */
+  skills: {
+    /** Active skills by title, without their text; archived ones too with `includeArchived`. */
+    list(ctx: EngineContext, opts?: { includeArchived?: boolean }): Promise<AiSkillSummary[]>;
+    get(ctx: EngineContext, id: string): Promise<AiSkill>;
+    create(ctx: EngineContext, input: AiSkillInput): Promise<AiSkill>;
+    update(ctx: EngineContext, id: string, patch: AiSkillPatch): Promise<AiSkill>;
+    /** Archives the skill (`update` with `archived: false` restores it). */
+    delete(ctx: EngineContext, id: string): Promise<void>;
+  };
   /** Agents working tasks: each run is a conversation the agent has for the person it acts for. */
   runs: {
     /** Make the run and its conversation and persist the brief; the returned handle drives the agent's turn. */
@@ -161,12 +180,13 @@ const titleFrom = (content: string): string => {
 };
 
 /** What an agent's conversations get after the system prompt. */
-const agentInstructions = (agent: AiAgent): string =>
+const agentInstructions = (agent: AiAgent, skills: readonly SkillRow[]): string =>
   [
     `## This agent\nYou are "${agent.name}", an agent in this workspace. Everything above still applies.`,
     agent.description ? `Purpose: ${agent.description}` : '',
     agent.tools ? 'You only have the tools listed; when asked for something else, say this agent cannot do it.' : '',
     agent.instructions ? `Instructions from the workspace:\n${agent.instructions}` : '',
+    skillsBlock(skills),
   ]
     .filter(Boolean)
     .join('\n');
@@ -184,6 +204,7 @@ const SEEDED_AGENT = {
   description: 'Works with everything in the workspace.',
   instructions: null,
   tools: null,
+  skills: null,
   starterPrompts: [...DEFAULT_SUGGESTED_PROMPTS],
   takesTasks: true,
 } as const;
@@ -331,10 +352,24 @@ export const createAiService = (options: AiServiceOptions): AiService => {
               description: agent.description ?? null,
               instructions: agent.instructions ?? null,
               tools: dedupe(tools),
+              skills: dedupe(agent.skillIds),
               starterPrompts: cleanPrompts(agent.starterPrompts),
             },
           ];
         }),
+      );
+      // Skills first: an agent's list names them.
+      await store.syncModuleSkills(
+        workspaceId,
+        snapshot.schema.modules.flatMap((installed) =>
+          installed.skills.map((skill) => ({
+            moduleId: installed.moduleId,
+            id: skill.id,
+            title: skill.title,
+            description: skill.description,
+            body: skill.body,
+          })),
+        ),
       );
       await store.syncModuleAgents(workspaceId, provided);
       syncedVersion.set(workspaceId, snapshot.version);
@@ -389,11 +424,14 @@ export const createAiService = (options: AiServiceOptions): AiService => {
     }
 
     const agent = toAgent(row);
+    const allowed = agent.skills ? new Set(agent.skills) : null;
+    const skills = skillsOf(await store.skills.list(workspaceId), allowed);
 
     return {
       id: agent.id,
       name: agent.name,
-      instructions: agentInstructions(agent),
+      instructions: agentInstructions(agent, skills),
+      skills: { allowed, count: skills.length },
       ...(agent.tools ? { tools: new Set(agent.tools) } : {}),
       approvalOverrides: agent.approvalOverrides,
     };
@@ -826,6 +864,28 @@ export const createAiService = (options: AiServiceOptions): AiService => {
     }
   };
 
+  /**
+   * The skills an agent is given must exist and be active: an id that names none would be a list that silently
+   * shrinks. One the agent already has is not asked again, so saving an agent whose skill was archived since is not
+   * refused for it.
+   */
+  const checkSkills = async (
+    workspaceId: string,
+    skills: string[] | null | undefined,
+    already: readonly string[] = [],
+  ) => {
+    if (!skills || skills.length === 0) {
+      return;
+    }
+
+    const active = new Set((await store.skills.list(workspaceId)).map((row) => row.id));
+    const unknown = dedupe(skills).filter((id) => !active.has(id) && !already.includes(id));
+
+    if (unknown.length > 0) {
+      throw new EngineError('VALIDATION', `Unknown or archived skills: ${unknown.join(', ')}`, { unknown });
+    }
+  };
+
   const agents: AiService['agents'] = {
     list: async (ctx, opts) => {
       requireUser(ctx);
@@ -890,6 +950,7 @@ export const createAiService = (options: AiServiceOptions): AiService => {
       authorize(ctx, 'ai.manage');
       await ensureReady(ctx.workspaceId);
       checkTools(input.tools);
+      await checkSkills(ctx.workspaceId, input.skills);
       const approvalOverrides = checkAgent(input) ?? {};
       const row = await store.agents.insert({
         id: newWorkspaceId(),
@@ -899,6 +960,7 @@ export const createAiService = (options: AiServiceOptions): AiService => {
         description: input.description ?? null,
         instructions: input.instructions ?? null,
         tools: input.tools ? dedupe(input.tools) : null,
+        skills: input.skills ? dedupe(input.skills) : null,
         starterPrompts: cleanPrompts(input.starterPrompts ?? []),
         approvalOverrides,
         takesTasks: input.takesTasks ?? false,
@@ -918,9 +980,9 @@ export const createAiService = (options: AiServiceOptions): AiService => {
 
       if (current.moduleId) {
         // What the module wrote changes with the module; the workspace keeps its approvals and the archive switch.
-        const owned = (['name', 'icon', 'description', 'instructions', 'tools', 'starterPrompts'] as const).filter(
-          (key) => patch[key] !== undefined,
-        );
+        const owned = (
+          ['name', 'icon', 'description', 'instructions', 'tools', 'skills', 'starterPrompts'] as const
+        ).filter((key) => patch[key] !== undefined);
 
         if (owned.length > 0) {
           throw new EngineError(
@@ -939,6 +1001,7 @@ export const createAiService = (options: AiServiceOptions): AiService => {
       }
 
       checkTools(patch.tools);
+      await checkSkills(ctx.workspaceId, patch.skills, current.skills ?? []);
       const approvalOverrides = checkAgent(patch);
       const row = await store.agents.update(ctx.workspaceId, id, {
         ...(patch.name !== undefined ? { name: agentName(patch.name) } : {}),
@@ -946,6 +1009,7 @@ export const createAiService = (options: AiServiceOptions): AiService => {
         ...(patch.description !== undefined ? { description: patch.description } : {}),
         ...(patch.instructions !== undefined ? { instructions: patch.instructions } : {}),
         ...(patch.tools !== undefined ? { tools: patch.tools ? dedupe(patch.tools) : null } : {}),
+        ...(patch.skills !== undefined ? { skills: patch.skills ? dedupe(patch.skills) : null } : {}),
         ...(patch.starterPrompts ? { starterPrompts: cleanPrompts(patch.starterPrompts) } : {}),
         ...(approvalOverrides ? { approvalOverrides } : {}),
         ...(patch.takesTasks !== undefined ? { takesTasks: patch.takesTasks } : {}),
@@ -970,6 +1034,122 @@ export const createAiService = (options: AiServiceOptions): AiService => {
     },
   };
 
+  const skillTitle = (title: string): string => {
+    const trimmed = title.trim();
+
+    if (!trimmed) {
+      throw new EngineError('VALIDATION', 'A skill needs a title');
+    }
+
+    return trimmed;
+  };
+
+  /**
+   * What the workspace wrote must stay a short list of distinct titles: at most `SKILLS_MAX` active ones, none sharing
+   * a title (any case) with another. `except` is the skill being changed.
+   */
+  const checkWritten = async (workspaceId: string, title: string, except?: string, counting = true) => {
+    const written = (await store.skills.list(workspaceId)).filter((row) => row.moduleId === null && row.id !== except);
+
+    if (counting && written.length >= SKILLS_MAX) {
+      throw new EngineError('CONFLICT', `A workspace can have ${SKILLS_MAX} skills of its own; archive one first`);
+    }
+
+    if (written.some((row) => row.title.toLowerCase() === title.toLowerCase())) {
+      throw new EngineError('CONFLICT', `A skill called "${title}" already exists`);
+    }
+  };
+
+  const skills: AiService['skills'] = {
+    list: async (ctx, opts) => {
+      requireUser(ctx);
+      authorize(ctx, 'ai.manage');
+      await ensureReady(ctx.workspaceId);
+
+      return (await store.skills.list(ctx.workspaceId, opts?.includeArchived ?? false)).map(toSkillSummary);
+    },
+    get: async (ctx, id) => {
+      requireUser(ctx);
+      authorize(ctx, 'ai.manage');
+      await ensureReady(ctx.workspaceId);
+      const row = await store.skills.get(ctx.workspaceId, id);
+
+      if (!row) {
+        throw new EngineError('NOT_FOUND', `Skill "${id}" not found`);
+      }
+
+      return toSkill(row);
+    },
+    create: async (ctx, input) => {
+      requireUser(ctx);
+      authorize(ctx, 'ai.manage');
+      await ensureReady(ctx.workspaceId);
+      const title = skillTitle(input.title);
+      await checkWritten(ctx.workspaceId, title);
+
+      return toSkill(
+        await store.skills.insert({
+          id: newWorkspaceId(),
+          workspaceId: ctx.workspaceId,
+          title,
+          description: input.description.trim(),
+          body: input.body.trim(),
+        }),
+      );
+    },
+    update: async (ctx, id, patch) => {
+      requireUser(ctx);
+      authorize(ctx, 'ai.manage');
+      await ensureReady(ctx.workspaceId);
+      const current = await store.skills.get(ctx.workspaceId, id);
+
+      if (!current) {
+        throw new EngineError('NOT_FOUND', `Skill "${id}" not found`);
+      }
+
+      if (current.moduleId) {
+        // What the module wrote changes with the module; the workspace keeps the archive switch.
+        const owned = (['title', 'description', 'body'] as const).filter((key) => patch[key] !== undefined);
+
+        if (owned.length > 0) {
+          throw new EngineError(
+            'VALIDATION',
+            `This skill comes with the module "${current.moduleId}", which owns its ${owned.join(', ')}. Archive it, or write a skill of your own.`,
+            { owned },
+          );
+        }
+
+        if (patch.archived === false && current.archivedByModule) {
+          throw new EngineError(
+            'CONFLICT',
+            `The module "${current.moduleId}" no longer provides this skill; install it again`,
+          );
+        }
+      } else {
+        const title = patch.title !== undefined ? skillTitle(patch.title) : current.title;
+        const restoring = patch.archived === false && current.archivedAt !== null;
+
+        if (patch.title !== undefined || restoring) {
+          await checkWritten(ctx.workspaceId, title, id, restoring);
+        }
+      }
+
+      const row = await store.skills.update(ctx.workspaceId, id, {
+        ...(patch.title !== undefined ? { title: skillTitle(patch.title) } : {}),
+        ...(patch.description !== undefined ? { description: patch.description.trim() } : {}),
+        ...(patch.body !== undefined ? { body: patch.body.trim() } : {}),
+        ...(patch.archived !== undefined
+          ? { archivedAt: patch.archived ? (current.archivedAt ?? clock()) : null }
+          : {}),
+      });
+
+      return toSkill(row ?? current);
+    },
+    delete: async (ctx, id) => {
+      await skills.update(ctx, id, { archived: true });
+    },
+  };
+
   return {
     status,
     conversations,
@@ -978,6 +1158,7 @@ export const createAiService = (options: AiServiceOptions): AiService => {
     cancel,
     settings,
     agents,
+    skills,
     runs,
     registry,
     store,

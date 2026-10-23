@@ -21,6 +21,7 @@ import {
   type ToolUseBlock,
 } from '../model/types';
 import { buildSystemPrompt } from '../prompt/system';
+import { createSkillsPort } from '../skills';
 import { type AiStore, type ConversationRow, type ToolCallRow, type TurnRow, toToolCall } from '../store';
 import { errorResult } from '../tools/helpers';
 import type { ToolRegistry } from '../tools/registry';
@@ -61,6 +62,11 @@ export interface AgentProfile {
   tools?: ReadonlySet<string>;
   /** The agent's own approval modes, by tool. */
   approvalOverrides: ApprovalOverrides;
+  /**
+   * The skills it may use: the ids it names (null for every active skill), and how many are active for it this turn.
+   * With none, it is not offered `use_skill`.
+   */
+  skills: { allowed: ReadonlySet<string> | null; count: number };
 }
 
 export interface TurnJob {
@@ -73,6 +79,9 @@ export interface TurnJob {
 }
 
 const REPEAT_LIMIT = 2;
+
+/** The tool that loads a skill; see `toolsFor`. */
+const USE_SKILL = 'use_skill';
 
 /** Why a call asks although its mode is auto: outside content may be trying to steer the agent. */
 const TAINT_REASON =
@@ -174,11 +183,17 @@ export const createTurnRuntime = (deps: TurnRuntimeDeps) => {
 
   /** The tools this turn may use: what the person may use, narrowed to the agent's list when it has one. */
   const toolsFor = (job: TurnJob, snapshot: Snapshot): ToolDefinition[] => {
-    const all = registry.toolsFor(job.ctx, snapshot);
+    const skilled = job.agent.skills.count > 0;
+    // `use_skill` is the way an agent uses what it was given: offered when it has a skill, whatever tools it lists.
+    const all = registry.toolsFor(job.ctx, snapshot).filter((tool) => tool.name !== USE_SKILL || skilled);
     const allowed = job.agent.tools;
 
     // Working a task needs the task tools whatever list the agent has: they are how it reads and hands in the work.
-    return allowed ? all.filter((tool) => allowed.has(tool.name) || (job.ctx.run && tool.area === 'tasks')) : all;
+    return allowed
+      ? all.filter(
+          (tool) => allowed.has(tool.name) || tool.name === USE_SKILL || (job.ctx.run && tool.area === 'tasks'),
+        )
+      : all;
   };
 
   /** One model call with a bounded retry when the SDK could not parse a streamed tool input. */
@@ -191,7 +206,9 @@ export const createTurnRuntime = (deps: TurnRuntimeDeps) => {
     ]);
     const request = {
       // What the agent is told follows what its tools do: the areas of the tools it can actually use this turn.
-      system: buildSystemPrompt(new Set(tools.map((tool) => tool.area))),
+      system: buildSystemPrompt(new Set(tools.map((tool) => tool.area)), {
+        skills: tools.some((tool) => tool.name === USE_SKILL),
+      }),
       ...(job.agent.instructions ? { instructions: job.agent.instructions } : {}),
       messages: rebuildMessages(rows, calls),
       tools: registry.specsFor(tools),
@@ -229,6 +246,7 @@ export const createTurnRuntime = (deps: TurnRuntimeDeps) => {
     navigate: (target) => navigations.push(target),
     ...(deps.workflows ? { workflows: deps.workflows } : {}),
     ...(deps.actions ? { actions: deps.actions } : {}),
+    skills: createSkillsPort(store, job.ctx.workspaceId, job.agent.skills.allowed),
     ...(answered ? { request: answered.request, ...(answered.values ? { secrets: answered.values } : {}) } : {}),
   });
 

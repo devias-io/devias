@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  declarationsOf,
   defineAction,
   defineAgent,
   defineBlock,
@@ -152,6 +153,75 @@ describe('a manifest of written ids', () => {
         blocks: [{ id: 'crm.card', label: 'Card', surfaces: ['record'] }],
       }),
     ).toThrow('ids must start with "library."');
+  });
+
+  describe('skills', () => {
+    const skill = (id: string) => ({ id, title: 'Count', description: 'When asked to count', body: '1. Count' });
+
+    it('are declared by the module, listed with its ids, and carried by what an installed module shows', () => {
+      const manifest = parseManifest({
+        id: 'library',
+        version: '1.0.0',
+        skills: [skill('library.count')],
+        agents: [
+          { id: 'library.librarian', name: 'Librarian', actionIds: ['core.list_records'], skillIds: ['library.count'] },
+        ],
+      });
+      expect(manifest.skills).toHaveLength(1);
+      expect(manifest.agents[0]?.skillIds).toEqual(['library.count']);
+      expect(idListOf(manifest)).toEqual(expect.arrayContaining(['library.count', 'library.librarian']));
+      expect(declarationsOf(manifest).skills).toEqual(manifest.skills);
+      // A module with none says so.
+      expect(parseManifest({ id: 'library', version: '1.0.0' }).skills).toEqual([]);
+    });
+
+    it('start with the module’s id, are declared once, and are only named by an agent of the module', () => {
+      expect(() => parseManifest({ id: 'library', version: '1.0.0', skills: [skill('crm.count')] })).toThrow(
+        'ids must start with "library."',
+      );
+      expect(() =>
+        parseManifest({ id: 'library', version: '1.0.0', skills: [skill('library.count'), skill('library.count')] }),
+      ).toThrow('declares the skill "library.count" twice');
+      expect(() =>
+        parseManifest({
+          id: 'library',
+          version: '1.0.0',
+          agents: [
+            { id: 'library.librarian', name: 'L', actionIds: ['core.list_records'], skillIds: ['library.nope'] },
+          ],
+        }),
+      ).toThrow('names the skill "library.nope", which the manifest does not declare');
+      expect(() =>
+        parseManifest({
+          id: 'library',
+          version: '1.0.0',
+          skills: [skill('library.count')],
+          agents: [
+            {
+              id: 'library.librarian',
+              name: 'L',
+              actionIds: ['core.list_records'],
+              skillIds: ['library.count', 'library.count'],
+            },
+          ],
+        }),
+      ).toThrow('names the skill "library.count" twice');
+    });
+
+    it('have a title, a line and a text, within their sizes, and at most twenty to a module', () => {
+      const bad = (patch: object) =>
+        parseManifest({ id: 'library', version: '1.0.0', skills: [{ ...skill('library.count'), ...patch }] });
+      expect(() => bad({ title: '' })).toThrow();
+      expect(() => bad({ description: 'x'.repeat(301) })).toThrow();
+      expect(() => bad({ body: 'x'.repeat(20_001) })).toThrow();
+      expect(() =>
+        parseManifest({
+          id: 'library',
+          version: '1.0.0',
+          skills: Array.from({ length: 21 }, (_, i) => skill(`library.s${i}`)),
+        }),
+      ).toThrow();
+    });
   });
 
   it('refuses a declaration with no id', () => {

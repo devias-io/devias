@@ -65,4 +65,8 @@ export const keys = {
     ['workspace', ws, 'ai', 'agent-activity', id, days] as const,
   /** Active and archived agents, to name who acted and to manage them. */
   aiAgentsAll: (ws: string) => ['workspace', ws, 'ai', 'agents', 'all'] as const,
+  /** The workspace's skills, active and archived, without their text; invalidating it refreshes every skill read. */
+  aiSkills: (ws: string) => ['workspace', ws, 'ai', 'skills'] as const,
+  /** One skill in full. */
+  aiSkill: (ws: string, id: string) => ['workspace', ws, 'ai', 'skills', id] as const,
 };

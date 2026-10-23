@@ -9338,6 +9338,328 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/workspaces/{workspaceId}/ai/skills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List skills */
+        get: {
+            parameters: {
+                query?: {
+                    includeArchived?: "true" | "false";
+                };
+                header?: never;
+                path: {
+                    /** @description Workspace (organization) id */
+                    workspaceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The skills of this workspace (owners and admins only) */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AiSkillSummary"][];
+                    };
+                };
+                /** @description Not authenticated */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not allowed */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a skill */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Workspace (organization) id */
+                    workspaceId: string;
+                };
+                cookie?: never;
+            };
+            /** @description Request body */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AiSkillInput"];
+                };
+            };
+            responses: {
+                /** @description The new skill (owners and admins only) */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AiSkill"];
+                    };
+                };
+                /** @description Validation error or invalid cursor */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not authenticated */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not allowed */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspaceId}/ai/skills/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a skill */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Workspace (organization) id */
+                    workspaceId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The skill, with its text */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AiSkill"];
+                    };
+                };
+                /** @description Not authenticated */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not allowed */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Archive a skill */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Workspace (organization) id */
+                    workspaceId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Archived */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not authenticated */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not allowed */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a skill */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Workspace (organization) id */
+                    workspaceId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Request body */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AiSkillPatch"];
+                };
+            };
+            responses: {
+                /** @description The updated skill */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AiSkill"];
+                    };
+                };
+                /** @description Validation error or invalid cursor */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not authenticated */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not allowed */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/api/workspaces/{workspaceId}/events": {
         parameters: {
             query?: never;
@@ -10829,6 +11151,8 @@ export interface components {
             /** @default [] */
             agents: components["schemas"]["AgentDefinition"][];
             /** @default [] */
+            skills: components["schemas"]["SkillDefinition"][];
+            /** @default [] */
             connections: components["schemas"]["ConnectionProvider"][];
             /** @default [] */
             variables: components["schemas"]["VariableDefinition"][];
@@ -10863,6 +11187,14 @@ export interface components {
             actionIds: components["schemas"]["Id"][];
             /** @default [] */
             starterPrompts: string[];
+            /** @default [] */
+            skillIds: components["schemas"]["Id"][];
+        };
+        SkillDefinition: {
+            id: components["schemas"]["Id"];
+            title: string;
+            description: string;
+            body: string;
         };
         ConnectionProvider: {
             id: components["schemas"]["Id"];
@@ -11938,6 +12270,8 @@ export interface components {
             /** @default [] */
             agents: components["schemas"]["AgentDefinition"][];
             /** @default [] */
+            skills: components["schemas"]["SkillDefinition"][];
+            /** @default [] */
             connections: components["schemas"]["ConnectionProvider"][];
             /** @default [] */
             variables: components["schemas"]["VariableDefinition"][];
@@ -12332,6 +12666,7 @@ export interface components {
             approvalOverrides: {
                 [key: string]: components["schemas"]["ApprovalMode"];
             };
+            skills: string[] | null;
             takesTasks: boolean;
             moduleId: string | null;
             archivedAt: string | null;
@@ -12366,6 +12701,7 @@ export interface components {
             approvalOverrides?: {
                 [key: string]: components["schemas"]["ApprovalMode"];
             };
+            skills?: string[] | null;
             takesTasks?: boolean;
         };
         AiAgentPatch: {
@@ -12378,7 +12714,44 @@ export interface components {
             approvalOverrides?: {
                 [key: string]: components["schemas"]["ApprovalMode"];
             };
+            skills?: string[] | null;
             takesTasks?: boolean;
+            archived?: boolean;
+        };
+        AiSkillSummary: {
+            workspaceId: string;
+            id: string;
+            title: string;
+            description: string;
+            moduleId: string | null;
+            archivedAt: string | null;
+            createdAt: string;
+            updatedAt: string;
+        };
+        AiSkill: {
+            workspaceId: string;
+            id: string;
+            title: string;
+            description: string;
+            moduleId: string | null;
+            archivedAt: string | null;
+            createdAt: string;
+            updatedAt: string;
+            body: string;
+        };
+        AiSkillInput: {
+            title: string;
+            /** @description One line saying when to use the skill */
+            description: string;
+            /** @description The procedure to follow, as Markdown */
+            body: string;
+        };
+        AiSkillPatch: {
+            title?: string;
+            /** @description One line saying when to use the skill */
+            description?: string;
+            /** @description The procedure to follow, as Markdown */
+            body?: string;
             archived?: boolean;
         };
         WebhookResult: {
@@ -12396,7 +12769,7 @@ export interface components {
             name: string;
             description: string;
             /** @enum {string} */
-            area: "records" | "model" | "workflows" | "documents" | "tasks" | "modules" | "actions" | "people" | "notifications" | "agents" | "interface" | "conversation";
+            area: "records" | "model" | "workflows" | "documents" | "tasks" | "modules" | "actions" | "people" | "notifications" | "agents" | "skills" | "interface" | "conversation";
             readOnly: boolean;
             escalates: boolean;
             approval: components["schemas"]["ApprovalMode"];

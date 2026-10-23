@@ -36,6 +36,7 @@ const booksModule = {
   core: false,
   blocks: [],
   agents: [],
+  skills: [],
   connections: [],
   variables: [],
   actions: [

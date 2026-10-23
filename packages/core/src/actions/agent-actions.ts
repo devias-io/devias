@@ -32,4 +32,10 @@ export const AGENT_ACTIONS: readonly AgentActionSpec[] = [
     summary: 'Hand in the task an agent was given, with what it did, for review',
     human: 'A person moves the task to in review with update_task.',
   },
+  {
+    id: coreIds.actions.use_skill,
+    tool: 'use_skill',
+    summary: 'Load one of the skills the agent may use, for the procedure it describes',
+    human: 'A person reads the skill in the agents section.',
+  },
 ];

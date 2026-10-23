@@ -1,6 +1,7 @@
 import {
   aiAgentActions as aiAgents,
   aiSettingsActions as aiSettings,
+  aiSkillActions as aiSkills,
   apiKeyActions as apiKeys,
   memberActions as members,
   personOf,
@@ -45,4 +46,11 @@ export const workspaceActions = ({ directory, ai }: ActionDeps): Action[] => [
   implement(aiAgents.create, (input, ctx) => ai.agents.create(ctx, input)),
   implement(aiAgents.update, ({ id, ...patch }, ctx) => ai.agents.update(ctx, id, patch)),
   implement(aiAgents.delete, ({ id }, ctx) => ai.agents.delete(ctx, id)),
+  implement(aiSkills.list, ({ includeArchived }, ctx) =>
+    ai.skills.list(ctx, { includeArchived: includeArchived === 'true' }),
+  ),
+  implement(aiSkills.get, ({ id }, ctx) => ai.skills.get(ctx, id)),
+  implement(aiSkills.create, (input, ctx) => ai.skills.create(ctx, input)),
+  implement(aiSkills.update, ({ id, ...patch }, ctx) => ai.skills.update(ctx, id, patch)),
+  implement(aiSkills.delete, ({ id }, ctx) => ai.skills.delete(ctx, id)),
 ];

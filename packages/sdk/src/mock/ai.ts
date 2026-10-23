@@ -2,6 +2,7 @@ import {
   type AiAgent,
   type AiClient,
   type AiSettings,
+  type AiSkill,
   type AiStatus,
   type AiStreamHandle,
   type AiToolArea,
@@ -23,6 +24,7 @@ import {
   type NavigateTarget,
   newId,
   newWorkspaceId,
+  SKILLS_MAX,
   type ToolCall,
   toolOfAction,
 } from '@devias/core';
@@ -200,6 +202,7 @@ export const createMockAi = (store: MockStore, options: MockAiOptions = {}): AiC
   const configured = options.configured ?? true;
   const threads = new Map<string, Thread>();
   const agents = new Map<string, AiAgent>();
+  const skills = new Map<string, AiSkill>();
   // Like a real workspace, it starts with one agent that has every tool; it is an ordinary, archivable agent.
   const seeded: AiAgent = {
     workspaceId: store.workspaceId,
@@ -209,6 +212,7 @@ export const createMockAi = (store: MockStore, options: MockAiOptions = {}): AiC
     description: 'Works with everything in the workspace.',
     instructions: null,
     tools: null,
+    skills: null,
     starterPrompts: [...DEFAULT_SUGGESTED_PROMPTS],
     approvalOverrides: {},
     takesTasks: true,
@@ -222,8 +226,52 @@ export const createMockAi = (store: MockStore, options: MockAiOptions = {}): AiC
 
   // Agents archived because their module went away: installing it again restores them.
   const archivedByModule = new Set<string>();
+  // Skills archived because their module went away: installing it again restores them.
+  const skillsArchivedByModule = new Set<string>();
+  /** Make the skills match what the installed modules ship, as the server does on every use. */
+  const syncModuleSkills = () => {
+    const provided = new Map(
+      [...store.modules.values()].flatMap((installed) =>
+        installed.skills.map((definition) => [definition.id, { installed, definition }] as const),
+      ),
+    );
+
+    for (const [id, { installed, definition }] of provided) {
+      const existing = skills.get(id);
+      const owned = {
+        moduleId: installed.moduleId,
+        title: definition.title,
+        description: definition.description,
+        body: definition.body,
+      };
+
+      if (!existing) {
+        skills.set(id, {
+          workspaceId: store.workspaceId,
+          ...owned,
+          id,
+          archivedAt: null,
+          createdAt: now(),
+          updatedAt: now(),
+        });
+      } else {
+        const restore = skillsArchivedByModule.delete(id);
+        skills.set(id, { ...existing, ...owned, ...(restore ? { archivedAt: null } : {}) });
+      }
+    }
+
+    for (const skill of skills.values()) {
+      if (skill.moduleId && !skill.archivedAt && !provided.has(skill.id)) {
+        skillsArchivedByModule.add(skill.id);
+        skills.set(skill.id, { ...skill, archivedAt: now() });
+      }
+    }
+  };
+
   /** Make the agents match what the installed modules ship, as the server does on every use. */
   const syncModuleAgents = () => {
+    syncModuleSkills();
+
     const provided = new Map(
       [...store.modules.values()].flatMap((installed) =>
         installed.agents.map((definition) => [definition.id, { installed, definition }] as const),
@@ -239,6 +287,7 @@ export const createMockAi = (store: MockStore, options: MockAiOptions = {}): AiC
         description: definition.description ?? null,
         instructions: definition.instructions ?? null,
         tools: definition.actionIds.flatMap((id) => toolOfAction(id) ?? []),
+        skills: [...new Set(definition.skillIds)],
         starterPrompts: cleanPrompts(definition.starterPrompts),
       };
 
@@ -325,6 +374,44 @@ export const createMockAi = (store: MockStore, options: MockAiOptions = {}): AiC
       throw new DeviasApiError(400, 'VALIDATION', `Unknown tools: ${unknown.join(', ')}`, { unknown });
     }
   };
+
+  const checkSkills = (ids: string[] | null | undefined, already: readonly string[] = []) => {
+    syncModuleSkills();
+    const unknown = [...new Set(ids ?? [])].filter(
+      (id) => (!skills.get(id) || skills.get(id)?.archivedAt) && !already.includes(id),
+    );
+
+    if (unknown.length > 0) {
+      throw new DeviasApiError(400, 'VALIDATION', `Unknown or archived skills: ${unknown.join(', ')}`, { unknown });
+    }
+  };
+  const skillOf = (id: string): AiSkill => {
+    syncModuleSkills();
+    const found = skills.get(id);
+
+    if (!found) {
+      throw new DeviasApiError(404, 'NOT_FOUND', `Skill "${id}" not found`);
+    }
+
+    return found;
+  };
+  /** At most `SKILLS_MAX` of the workspace's own, none sharing a title; `except` is the one being changed. */
+  const checkWritten = (title: string, except?: string, counting = true) => {
+    const written = [...skills.values()].filter((k) => !k.moduleId && !k.archivedAt && k.id !== except);
+
+    if (counting && written.length >= SKILLS_MAX) {
+      throw new DeviasApiError(
+        409,
+        'CONFLICT',
+        `A workspace can have ${SKILLS_MAX} skills of its own; archive one first`,
+      );
+    }
+
+    if (written.some((k) => k.title.toLowerCase() === title.toLowerCase())) {
+      throw new DeviasApiError(409, 'CONFLICT', `A skill called "${title}" already exists`);
+    }
+  };
+  const withoutBody = ({ body: _body, ...summary }: AiSkill) => summary;
 
   const thread = (id: string): Thread => {
     const found = threads.get(id);
@@ -874,6 +961,7 @@ export const createMockAi = (store: MockStore, options: MockAiOptions = {}): AiC
       },
       create: async (input) => {
         checkTools(input.tools);
+        checkSkills(input.skills);
         checkOverrides(input.approvalOverrides);
         const created: AiAgent = {
           workspaceId: store.workspaceId,
@@ -883,6 +971,7 @@ export const createMockAi = (store: MockStore, options: MockAiOptions = {}): AiC
           description: input.description ?? null,
           instructions: input.instructions ?? null,
           tools: input.tools ? [...new Set(input.tools)] : null,
+          skills: input.skills ? [...new Set(input.skills)] : null,
           starterPrompts: cleanPrompts(input.starterPrompts ?? []),
           approvalOverrides: input.approvalOverrides ?? {},
           takesTasks: input.takesTasks ?? false,
@@ -899,9 +988,9 @@ export const createMockAi = (store: MockStore, options: MockAiOptions = {}): AiC
         const current = agent(id);
 
         if (current.moduleId) {
-          const owned = (['name', 'icon', 'description', 'instructions', 'tools', 'starterPrompts'] as const).filter(
-            (key) => patch[key] !== undefined,
-          );
+          const owned = (
+            ['name', 'icon', 'description', 'instructions', 'tools', 'skills', 'starterPrompts'] as const
+          ).filter((key) => patch[key] !== undefined);
 
           if (owned.length > 0) {
             throw new DeviasApiError(
@@ -918,6 +1007,7 @@ export const createMockAi = (store: MockStore, options: MockAiOptions = {}): AiC
         }
 
         checkTools(patch.tools);
+        checkSkills(patch.skills, current.skills ?? []);
         checkOverrides(patch.approvalOverrides);
         const updated: AiAgent = {
           ...current,
@@ -926,6 +1016,7 @@ export const createMockAi = (store: MockStore, options: MockAiOptions = {}): AiC
           ...(patch.description !== undefined ? { description: patch.description } : {}),
           ...(patch.instructions !== undefined ? { instructions: patch.instructions } : {}),
           ...(patch.tools !== undefined ? { tools: patch.tools ? [...new Set(patch.tools)] : null } : {}),
+          ...(patch.skills !== undefined ? { skills: patch.skills ? [...new Set(patch.skills)] : null } : {}),
           ...(patch.starterPrompts ? { starterPrompts: cleanPrompts(patch.starterPrompts) } : {}),
           ...(patch.approvalOverrides ? { approvalOverrides: patch.approvalOverrides } : {}),
           ...(patch.takesTasks !== undefined ? { takesTasks: patch.takesTasks } : {}),
@@ -949,6 +1040,79 @@ export const createMockAi = (store: MockStore, options: MockAiOptions = {}): AiC
         if (settings.defaultAgentId === id) {
           settings = { ...settings, defaultAgentId: null };
         }
+      },
+    },
+    skills: {
+      list: async (opts) => {
+        syncModuleSkills();
+
+        return [...skills.values()]
+          .filter((k) => opts?.includeArchived || !k.archivedAt)
+          .sort((a, b) => a.title.localeCompare(b.title))
+          .map(withoutBody);
+      },
+      get: async (id) => ({ ...skillOf(id) }),
+      create: async (input) => {
+        const title = input.title.trim();
+        checkWritten(title);
+        const created: AiSkill = {
+          workspaceId: store.workspaceId,
+          id: newWorkspaceId(),
+          title,
+          description: input.description.trim(),
+          body: input.body.trim(),
+          moduleId: null,
+          archivedAt: null,
+          createdAt: now(),
+          updatedAt: now(),
+        };
+        skills.set(created.id, created);
+
+        return created;
+      },
+      update: async (id, patch) => {
+        const current = skillOf(id);
+
+        if (current.moduleId) {
+          const owned = (['title', 'description', 'body'] as const).filter((key) => patch[key] !== undefined);
+
+          if (owned.length > 0) {
+            throw new DeviasApiError(
+              400,
+              'VALIDATION',
+              `This skill comes with the module "${current.moduleId}", which owns its ${owned.join(', ')}. Archive it, or write a skill of your own.`,
+              { owned },
+            );
+          }
+
+          if (patch.archived === false && skillsArchivedByModule.has(id)) {
+            throw new DeviasApiError(409, 'CONFLICT', `The module "${current.moduleId}" no longer provides this skill`);
+          }
+        } else {
+          const restoring = patch.archived === false && current.archivedAt !== null;
+
+          if (patch.title !== undefined || restoring) {
+            checkWritten(patch.title?.trim() ?? current.title, id, restoring);
+          }
+        }
+
+        const updated: AiSkill = {
+          ...current,
+          ...(patch.title !== undefined ? { title: patch.title.trim() } : {}),
+          ...(patch.description !== undefined ? { description: patch.description.trim() } : {}),
+          ...(patch.body !== undefined ? { body: patch.body.trim() } : {}),
+          ...(patch.archived !== undefined
+            ? { archivedAt: patch.archived ? (current.archivedAt ?? now()) : null }
+            : {}),
+          updatedAt: now(),
+        };
+        skills.set(id, updated);
+
+        return updated;
+      },
+      delete: async (id) => {
+        const current = skillOf(id);
+        skills.set(id, { ...current, archivedAt: current.archivedAt ?? now(), updatedAt: now() });
       },
     },
   };

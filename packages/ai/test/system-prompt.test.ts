@@ -47,6 +47,16 @@ describe('the system prompt by area', () => {
     expect(prompt('modules')).not.toContain('## How the workspace is organised');
   });
 
+  it('teaches skills only to an agent that has some, after how to work', () => {
+    const base = prompt();
+    // The skills tools alone add nothing: the section is for an agent that can load a skill.
+    expect(prompt('skills')).toBe(base);
+    const skilled = buildSystemPrompt(new Set(), { skills: true });
+    expect(skilled).toContain('## Skills');
+    expect(skilled.indexOf('## Skills')).toBeGreaterThan(skilled.indexOf('## How to work'));
+    expect(skilled.slice(0, skilled.indexOf('\n\n## Skills'))).toBe(base);
+  });
+
   it('gives an agent with every tool every section, in a fixed order', () => {
     const full = buildSystemPrompt(new Set(ALL));
     const order = [

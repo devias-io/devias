@@ -261,7 +261,8 @@ describe('agent tools from actions', () => {
   });
 
   it("keeps an agent to its tool list, whatever the person's role", async () => {
-    const reader = (await api(`${base}/agents`, { body: { name: 'Reader', tools: ['list_records'] } })).json as {
+    const reader = (await api(`${base}/agents`, { body: { name: 'Reader', tools: ['list_records'], skills: [] } }))
+      .json as {
       id: string;
     };
     model.push(

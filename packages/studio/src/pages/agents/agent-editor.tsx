@@ -1,4 +1,4 @@
-import type { AiAgent, AiAgentInput, AiToolInfo, ApprovalMode } from '@devias/core';
+import type { AiAgent, AiAgentInput, AiSkillSummary, AiToolInfo, ApprovalMode } from '@devias/core';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +32,7 @@ import { AgentMark } from '../../agent-chat/agent-mark';
 import { toolLabel } from '../../agent-chat/chat/tool-call-card';
 import { defaultAgentOf, useAiSettings, useAllAgents } from '../../hooks/use-agents';
 import { errorMessage } from '../../hooks/use-mutations';
+import { useAllSkills } from '../../hooks/use-skills';
 import { useClient } from '../../providers/client';
 import { useSchema } from '../../providers/schema';
 import { useStudioConfig } from '../../providers/studio-config';
@@ -40,6 +41,7 @@ import { keys } from '../../query/keys';
 import { links } from '../../router/links';
 import { useNavigation } from '../../router/navigation';
 import { AgentUsageCard } from './agent-usage';
+import { AddSkills, ChosenSkills, SkillScope } from './skill-access';
 import { StarterPrompts } from './starter-prompts';
 import { templateOf } from './templates';
 import { AddTools, inAreas, ToolAccess, type ToolMode, ToolRow, ToolScope, toolMode } from './tool-access';
@@ -59,13 +61,16 @@ interface Draft {
   /** Off: every tool the person may use. On: only `tools`. */
   limitTools: boolean;
   tools: Set<string>;
+  /** Off: every active skill. On: only `skills`. */
+  limitSkills: boolean;
+  skills: Set<string>;
   /** The agent's own modes, where they differ from the workspace's. */
   approvals: Record<string, ApprovalMode>;
 }
 
 /** What a draft starts from: an agent, or a template's input. */
 type DraftSource = Partial<
-  Pick<AiAgent, 'name' | 'icon' | 'description' | 'instructions' | 'tools' | 'starterPrompts' | 'takesTasks'>
+  Pick<AiAgent, 'name' | 'icon' | 'description' | 'instructions' | 'tools' | 'skills' | 'starterPrompts' | 'takesTasks'>
 > & {
   approvalOverrides?: Record<string, ApprovalMode> | undefined;
 };
@@ -80,18 +85,22 @@ const draftOf = (source: DraftSource | null, isDefault = false): Draft => ({
   takesTasks: source?.takesTasks ?? false,
   limitTools: source?.tools !== null && source?.tools !== undefined,
   tools: new Set(source?.tools ?? []),
+  limitSkills: source?.skills !== null && source?.skills !== undefined,
+  skills: new Set(source?.skills ?? []),
   approvals: { ...(source?.approvalOverrides ?? {}) },
 });
 
 const cleanPrompts = (prompts: string[]): string[] => [...new Set(prompts.map((p) => p.trim()).filter(Boolean))];
 
-const inputOf = (draft: Draft): AiAgentInput => ({
+const inputOf = (draft: Draft, active?: ReadonlySet<string>): AiAgentInput => ({
   name: draft.name.trim(),
   icon: draft.icon.trim() || null,
   description: draft.description.trim() || null,
   instructions: draft.instructions.trim() || null,
   starterPrompts: cleanPrompts(draft.starterPrompts),
   tools: draft.limitTools ? [...draft.tools] : null,
+  // A skill archived since it was picked is left out, once the skills are known.
+  skills: draft.limitSkills ? [...draft.skills].filter((id) => !active || active.has(id)) : null,
   approvalOverrides: draft.approvals,
   takesTasks: draft.takesTasks,
 });
@@ -104,6 +113,7 @@ const fingerprint = (draft: Draft): string => {
     ...input,
     isDefault: draft.isDefault,
     tools: input.tools ? [...input.tools].sort() : null,
+    skills: input.skills ? [...input.skills].sort() : null,
     approvalOverrides: Object.fromEntries(Object.entries(input.approvalOverrides ?? {}).sort()),
   });
 };
@@ -130,6 +140,7 @@ const TABS = [
   { key: 'general', title: 'General' },
   { key: 'instructions', title: 'Instructions' },
   { key: 'tools', title: 'Tools' },
+  { key: 'skills', title: 'Skills' },
   // Only an agent that exists has been used.
   { key: 'usage', title: 'Usage' },
 ] as const;
@@ -173,6 +184,29 @@ export function AgentEditorPage({ agent, tools }: { agent: AiAgent | null; tools
     [tools, draft.tools],
   );
   const overrides = tools.filter((tool) => draft.approvals[tool.name] !== undefined);
+  // The skills it could be given (the active ones), and which of the picked ones still are.
+  const skillList = useAllSkills();
+  const activeSkills = useMemo(
+    () => (skillList.data ?? []).filter((skill) => skill.archivedAt === null),
+    [skillList.data],
+  );
+  const activeIds = useMemo(
+    () => (skillList.data ? new Set(activeSkills.map((skill) => skill.id)) : undefined),
+    [skillList.data, activeSkills],
+  );
+  const chosenSkills = activeSkills.filter((skill) => draft.skills.has(skill.id));
+  const pickedSkills = chosenSkills.length;
+  const skillsLeft = activeSkills.filter((skill) => !draft.skills.has(skill.id));
+  const skillSources = useMemo(() => new Map(modules.map((m) => [m.moduleId, m.name])), [modules]);
+  const addSkills = (added: AiSkillSummary[]) =>
+    setDraft((d) => ({ ...d, skills: new Set([...d.skills, ...added.map((skill) => skill.id)]) }));
+  const removeSkill = (skill: AiSkillSummary) =>
+    setDraft((d) => {
+      const kept = new Set(d.skills);
+      kept.delete(skill.id);
+
+      return { ...d, skills: kept };
+    });
 
   const listHref = links.agents(slug);
   const named = draft.name.trim().length > 0;
@@ -222,7 +256,9 @@ export function AgentEditorPage({ agent, tools }: { agent: AiAgent | null; tools
 
     try {
       // The module owns the rest of its agent, so only the approvals are sent.
-      const input = owner ? { approvalOverrides: draft.approvals, takesTasks: draft.takesTasks } : inputOf(draft);
+      const input = owner
+        ? { approvalOverrides: draft.approvals, takesTasks: draft.takesTasks }
+        : inputOf(draft, activeIds);
       const saved = agent
         ? await client.ai.agents.update(agent.id, input)
         : await client.ai.agents.create(input as AiAgentInput);
@@ -315,6 +351,9 @@ export function AgentEditorPage({ agent, tools }: { agent: AiAgent | null; tools
               {tabs.map((t) => (
                 <TabsTrigger key={t.key} value={t.key}>
                   {t.title}
+                  {t.key === 'skills' && draft.limitSkills ? (
+                    <span className="text-xs tabular-nums text-muted-foreground">{pickedSkills}</span>
+                  ) : null}
                   {t.key === 'tools' && draft.limitTools ? (
                     <span
                       className={cn('text-xs tabular-nums', noTools ? 'text-destructive' : 'text-muted-foreground')}
@@ -572,6 +611,63 @@ export function AgentEditorPage({ agent, tools }: { agent: AiAgent | null; tools
                       </section>
                     ) : null}
                   </>
+                )}
+              </div>
+            </TabsContent>
+            <TabsContent value="skills">
+              <div className="mb-5">
+                <h2 className="font-heading text-h4">Skills</h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Procedures the workspace wrote. This agent sees the title of each and when to use it, and loads one
+                  when a request calls for it. A skill gives it no tool it does not already have.
+                </p>
+              </div>
+              <SkillScope
+                chosen={draft.limitSkills}
+                disabled={owner !== null}
+                onChange={(limitSkills) => setDraft({ ...draft, limitSkills })}
+              />
+              <div className="mt-8">
+                {draft.limitSkills ? (
+                  <>
+                    <div className="mb-3 flex min-h-9 items-center justify-between gap-2">
+                      <h3 className="font-heading text-h4">
+                        {chosenSkills.length === 1 ? '1 skill' : `${chosenSkills.length} skills`}
+                      </h3>
+                      {owner ? null : <AddSkills skills={skillsLeft} sources={skillSources} onAdd={addSkills} />}
+                    </div>
+                    {chosenSkills.length === 0 ? (
+                      <div className="rounded-lg border border-dashed border-border px-6 py-10 text-center">
+                        <p className="text-xs font-medium">No skills yet</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {owner ? (
+                            'This agent uses none.'
+                          ) : (
+                            <>
+                              Add the skills this agent may use, or{' '}
+                              <navigation.Link href={links.skill(slug)} className="underline underline-offset-2">
+                                write a new one
+                              </navigation.Link>
+                              .
+                            </>
+                          )}
+                        </p>
+                      </div>
+                    ) : (
+                      <ChosenSkills
+                        skills={chosenSkills}
+                        sources={skillSources}
+                        {...(owner ? {} : { onRemove: removeSkill })}
+                      />
+                    )}
+                  </>
+                ) : (
+                  <div className="rounded-lg bg-card p-5 ring-1 ring-card-border" data-slot="all-skills">
+                    <p className="text-xs">
+                      {activeSkills.length === 1 ? '1 skill' : `${activeSkills.length} skills`} today, and any written
+                      later.
+                    </p>
+                  </div>
                 )}
               </div>
             </TabsContent>

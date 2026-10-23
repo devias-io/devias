@@ -351,7 +351,9 @@ describe('agents API', () => {
     expect(events.at(-1)).toMatchObject({ type: 'done', status: 'completed' });
     const request = model.requests.at(-1);
     expect(request?.instructions).toContain('You are "Sales"');
-    expect(request?.tools.map((t) => t.name)).toEqual(['list_records', 'lookup_records']);
+    // Its list, and use_skill: the CRM that is installed here has a skill, and an agent may use every skill by default.
+    expect(request?.tools.map((t) => t.name)).toEqual(['list_records', 'lookup_records', 'use_skill']);
+    expect(request?.instructions).toContain('- Close out a deal:');
 
     const renamed = await api(`${base}/agents/${agent.id}`, { method: 'PATCH', body: { name: 'Pipeline' } });
     expect(renamed.status).toBe(200);
@@ -411,6 +413,80 @@ describe('agents API', () => {
     expect((await api(`${base}/agents/${pipelineId}/activity?tz=Mars/Olympus`)).status).toBe(400);
     expect((await api(`${base}/agents/missing/activity`)).status).toBe(404);
     expect((await client(server, { cookie: member.cookie })(`${base}/agents/${pipelineId}/activity`)).status).toBe(403);
+  });
+
+  it('lets owners and admins write skills, validates them, and gives an agent a list of them', async () => {
+    const doc = (await client(server)('/api/openapi.json')).json as {
+      paths: Record<string, unknown>;
+      components: { schemas: Record<string, unknown> };
+    };
+    expect(Object.keys(doc.paths)).toEqual(
+      expect.arrayContaining([
+        '/api/workspaces/{workspaceId}/ai/skills',
+        '/api/workspaces/{workspaceId}/ai/skills/{id}',
+      ]),
+    );
+    expect(Object.keys(doc.components.schemas)).toEqual(expect.arrayContaining(['AiSkill', 'AiSkillInput']));
+
+    const created = await api(`${base}/skills`, {
+      body: { title: ' Qualify a lead ', description: 'When a new lead arrives', body: '1. Look it up\n2. Score it' },
+    });
+    expect(created.status).toBe(201);
+    const skill = created.json as { id: string; title: string; body: string };
+    expect(skill).toMatchObject({ title: 'Qualify a lead', body: '1. Look it up\n2. Score it' });
+
+    // The list leaves out the text; one skill read by id has it.
+    const listed = (await api(`${base}/skills`)).json as { id: string; moduleId: string | null }[];
+    // The CRM that is installed here ships one.
+    expect(listed.map((row) => row.id).sort()).toEqual(['crm.close_deal', skill.id].sort());
+    expect(listed.find((row) => row.id === 'crm.close_deal')).toMatchObject({ moduleId: 'crm' });
+    expect(listed[0]).not.toHaveProperty('body');
+    expect(((await api(`${base}/skills/${skill.id}`)).json as { body: string }).body).toContain('Score it');
+
+    // What is wrong with a skill is a 400, a clash is a 409, a missing one is a 404.
+    expect((await api(`${base}/skills`, { body: { title: '', description: 'x', body: 'y' } })).status).toBe(400);
+    expect(
+      (await api(`${base}/skills`, { body: { title: 'T', description: 'x'.repeat(301), body: 'y' } })).status,
+    ).toBe(400);
+    expect(
+      (await api(`${base}/skills`, { body: { title: 'T', description: 'x', body: 'y'.repeat(20_001) } })).status,
+    ).toBe(400);
+    expect(
+      (await api(`${base}/skills`, { body: { title: 'qualify a lead', description: 'x', body: 'y' } })).status,
+    ).toBe(409);
+    expect((await api(`${base}/skills/missing`)).status).toBe(404);
+
+    // Only people who manage agents see or write skills.
+    const member = await signUp(server, 'frank@example.com', 'Frank');
+    const invite = await server.auth.api.createInvitation({
+      body: { email: 'frank@example.com', role: 'member', organizationId: ws.id },
+      headers: new Headers({ cookie: alice.cookie }),
+    });
+    await server.auth.api.acceptInvitation({
+      body: { invitationId: invite.id },
+      headers: new Headers({ cookie: member.cookie }),
+    });
+    const memberApi = client(server, { cookie: member.cookie });
+    expect((await memberApi(`${base}/skills`)).status).toBe(403);
+    expect((await memberApi(`${base}/skills/${skill.id}`)).status).toBe(403);
+    expect((await memberApi(`${base}/skills`, { body: { title: 'Mine', description: 'x', body: 'y' } })).status).toBe(
+      403,
+    );
+
+    // An agent gets all skills, or a list of the ones that exist.
+    const sales = (await api(`${base}/agents`, { body: { name: 'Skilled', skills: [skill.id] } })).json as {
+      id: string;
+      skills: string[];
+    };
+    expect(sales.skills).toEqual([skill.id]);
+    expect((await api(`${base}/agents`, { body: { name: 'Lost', skills: ['workspace.nope'] } })).status).toBe(400);
+
+    // Archiving takes the skill from the list, and from nothing else.
+    expect((await api(`${base}/skills/${skill.id}`, { method: 'DELETE' })).status).toBe(204);
+    expect(((await api(`${base}/skills`)).json as { id: string }[]).map((row) => row.id)).toEqual(['crm.close_deal']);
+    expect(((await api(`${base}/skills?includeArchived=true`)).json as unknown[]).length).toBe(2);
+    const restored = await api(`${base}/skills/${skill.id}`, { method: 'PATCH', body: { archived: false } });
+    expect((restored.json as { archivedAt: string | null }).archivedAt).toBeNull();
   });
 
   it('reports "not configured" and refuses turns when no model is set', async () => {

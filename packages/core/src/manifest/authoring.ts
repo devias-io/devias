@@ -18,7 +18,7 @@ import type { z } from 'zod';
 import { withCellKeys } from '../layout/shape';
 import type { LayoutBlockSchema, LayoutCellSchema, LayoutTabSchema } from '../metadata/schema';
 import type { ActionDefinitionSchema, ConnectionProviderSchema, EventDefinitionSchema } from '../module-runtime';
-import type { AgentDefinitionSchema } from './agents';
+import type { AgentDefinitionSchema, SkillDefinitionSchema } from './agents';
 import type { BlockDeclarationSchema } from './blocks';
 import type { PolicyDefinitionSchema } from './consent';
 import type {
@@ -90,6 +90,7 @@ export type CommandItemDefinitionInput = z.input<typeof CommandItemDefinitionSch
 export type BlockDeclarationInput = z.input<typeof BlockDeclarationSchema>;
 export type PageDeclarationInput = z.input<typeof PageDeclarationSchema>;
 export type AgentDefinitionInput = z.input<typeof AgentDefinitionSchema>;
+export type SkillDefinitionInput = z.input<typeof SkillDefinitionSchema>;
 export type ActionDefinitionInput = z.input<typeof ActionDefinitionSchema>;
 /** A connection as an author writes it: its `label` may be left out, and is then the module's name. */
 export type ConnectionProviderInput = WithOptionalLabel<z.input<typeof ConnectionProviderSchema>>;

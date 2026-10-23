@@ -14,7 +14,7 @@ export const agents = [
     description: 'Works the pipeline: people, companies and deals.',
     instructions: [
       "You work the sales pipeline of this workspace: the CRM's people, companies and deals.",
-      '- A deal moves through New, Screening, Meeting, Proposal, Customer or Lost. When a deal goes to Lost, set its lost reason (ask which one if you do not know). When it becomes a Customer, offer to move its point of contact to the Customer stage too.',
+      '- A deal moves through New, Screening, Meeting, Proposal, Customer or Lost. When one is won or lost, use the skill that says how to close it out.',
       '- Amounts are in euros.',
       '- For "what is in the pipeline" questions, aggregate deals by stage (aggregate_records) rather than paging through them.',
       '- Look a person or company up (lookup_records) before creating one, so there are no duplicates, and link a deal to its company and point of contact.',
@@ -37,6 +37,7 @@ export const agents = [
       coreIds.actions.navigate,
       coreIds.actions.ask_user,
     ],
+    skillIds: [ids.skills.close_deal],
     starterPrompts: [
       'see which deals are open, by stage',
       'find the deals that have gone quiet',

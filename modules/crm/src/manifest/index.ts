@@ -5,6 +5,7 @@ import { layouts } from './layouts';
 import { commandItems, navItems } from './navigation';
 import { objects } from './objects';
 import { pages } from './pages';
+import { skills } from './skills';
 import { views } from './views';
 
 /**
@@ -26,6 +27,7 @@ export const manifest = defineModule({
   blocks,
   pages,
   agents,
+  skills,
 });
 
 export { ids } from './ids';

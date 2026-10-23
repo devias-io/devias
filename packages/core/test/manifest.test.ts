@@ -282,7 +282,7 @@ describe('agents a manifest ships', () => {
 
   it('are kept with their defaults, in the declarations an installed module carries', () => {
     const manifest = parseManifest({ ...mailer, agents: [agent] });
-    expect(manifest.agents).toEqual([{ ...agent, starterPrompts: [] }]);
+    expect(manifest.agents).toEqual([{ ...agent, starterPrompts: [], skillIds: [] }]);
     expect(declarationsOf(manifest).agents).toEqual(manifest.agents);
     expect(parseManifest(mailer).agents).toEqual([]);
   });

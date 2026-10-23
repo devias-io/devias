@@ -1,6 +1,8 @@
 import {
   type AiAgent,
   type AiSettings,
+  type AiSkill,
+  type AiSkillSummary,
   type AiTurn,
   type AiUsage,
   addUsage,
@@ -15,7 +17,7 @@ import {
 } from '@devias/core';
 import type { Db } from '@devias/data-engine';
 import { and, asc, count, desc, eq, inArray, isNotNull, isNull, max, notInArray, sql } from 'drizzle-orm';
-import { aiAgent, aiConversation, aiMessage, aiRun, aiSettings, aiToolCall, aiTurn } from './db/schema';
+import { aiAgent, aiConversation, aiMessage, aiRun, aiSettings, aiSkill, aiToolCall, aiTurn } from './db/schema';
 import {
   type ContentBlock,
   isRedactedThinkingBlock,
@@ -33,6 +35,7 @@ export type ToolCallRow = typeof aiToolCall.$inferSelect;
 export type SettingsRow = typeof aiSettings.$inferSelect;
 export type AgentRow = typeof aiAgent.$inferSelect;
 export type RunRow = typeof aiRun.$inferSelect;
+export type SkillRow = typeof aiSkill.$inferSelect;
 
 export const toTaskRun = (row: RunRow): TaskRun => ({
   id: row.id,
@@ -59,6 +62,7 @@ export const toAgent = (row: AgentRow): AiAgent => ({
   tools: row.tools ?? null,
   starterPrompts: row.starterPrompts ?? [],
   approvalOverrides: row.approvalOverrides ?? {},
+  skills: row.skills ?? null,
   takesTasks: row.takesTasks,
   moduleId: row.moduleId,
   id: row.id,
@@ -66,6 +70,19 @@ export const toAgent = (row: AgentRow): AiAgent => ({
   createdAt: row.createdAt.toISOString(),
   updatedAt: row.updatedAt.toISOString(),
 });
+
+export const toSkillSummary = (row: SkillRow): AiSkillSummary => ({
+  workspaceId: row.workspaceId,
+  id: row.id,
+  title: row.title,
+  description: row.description,
+  moduleId: row.moduleId,
+  archivedAt: iso(row.archivedAt),
+  createdAt: row.createdAt.toISOString(),
+  updatedAt: row.updatedAt.toISOString(),
+});
+
+export const toSkill = (row: SkillRow): AiSkill => ({ ...toSkillSummary(row), body: row.body });
 
 export const toConversation = (row: ConversationRow): Conversation => ({
   id: row.id,
@@ -554,6 +571,7 @@ export const createAiStore = (db: Db, clock: () => Date = () => new Date()) => {
       | 'description'
       | 'instructions'
       | 'tools'
+      | 'skills'
       | 'starterPrompts'
       | 'approvalOverrides'
       | 'takesTasks'
@@ -602,6 +620,47 @@ export const createAiStore = (db: Db, clock: () => Date = () => new Date()) => {
       ),
   };
 
+  type SkillPatch = Partial<Pick<SkillRow, 'title' | 'description' | 'body' | 'archivedAt'>>;
+
+  const skills = {
+    /** Active skills by title; archived ones only when asked for. */
+    list: (workspaceId: string, includeArchived = false): Promise<SkillRow[]> =>
+      db
+        .select()
+        .from(aiSkill)
+        .where(
+          includeArchived
+            ? eq(aiSkill.workspaceId, workspaceId)
+            : and(eq(aiSkill.workspaceId, workspaceId), isNull(aiSkill.archivedAt)),
+        )
+        .orderBy(asc(aiSkill.title), asc(aiSkill.id)),
+    get: async (workspaceId: string, id: string): Promise<SkillRow | undefined> =>
+      one(
+        await db
+          .select()
+          .from(aiSkill)
+          .where(and(eq(aiSkill.workspaceId, workspaceId), eq(aiSkill.id, id)))
+          .limit(1),
+      ),
+    insert: async (row: { id: string; workspaceId: string; title: string; description: string; body: string }) => {
+      const now = clock();
+      const rows = await db
+        .insert(aiSkill)
+        .values({ ...row, createdAt: now, updatedAt: now })
+        .returning();
+
+      return rows[0] as SkillRow;
+    },
+    update: async (workspaceId: string, id: string, patch: SkillPatch): Promise<SkillRow | undefined> =>
+      one(
+        await db
+          .update(aiSkill)
+          .set({ ...patch, updatedAt: clock() })
+          .where(and(eq(aiSkill.workspaceId, workspaceId), eq(aiSkill.id, id)))
+          .returning(),
+      ),
+  };
+
   /** What a module's manifest says one of its agents is: the part the module owns. */
   interface ModuleAgentRow {
     moduleId: string;
@@ -611,6 +670,7 @@ export const createAiStore = (db: Db, clock: () => Date = () => new Date()) => {
     description: string | null;
     instructions: string | null;
     tools: string[];
+    skills: string[];
     starterPrompts: string[];
   }
 
@@ -630,6 +690,7 @@ export const createAiStore = (db: Db, clock: () => Date = () => new Date()) => {
           description: agent.description,
           instructions: agent.instructions,
           tools: agent.tools,
+          skills: agent.skills,
           starterPrompts: agent.starterPrompts,
         };
         await tx
@@ -700,10 +761,64 @@ export const createAiStore = (db: Db, clock: () => Date = () => new Date()) => {
     });
   };
 
+  /** What a module's manifest says one of its skills is: the part the module owns. */
+  interface ModuleSkillRow {
+    moduleId: string;
+    id: string;
+    title: string;
+    description: string;
+    body: string;
+  }
+
+  /**
+   * Make the workspace's skills match what its installed modules ship, as agents are (`syncModuleAgents`): create the
+   * new ones, update the module-owned text of the rest, restore one that was archived because its module went away,
+   * and archive those no module provides any more. A skill a person archived stays archived.
+   */
+  const syncModuleSkills = async (workspaceId: string, provided: ModuleSkillRow[]): Promise<void> => {
+    const now = clock();
+    await db.transaction(async (tx) => {
+      for (const skill of provided) {
+        const owned = {
+          moduleId: skill.moduleId,
+          title: skill.title,
+          description: skill.description,
+          body: skill.body,
+        };
+        await tx
+          .insert(aiSkill)
+          .values({ workspaceId, id: skill.id, ...owned, createdAt: now, updatedAt: now })
+          .onConflictDoUpdate({
+            target: [aiSkill.workspaceId, aiSkill.id],
+            set: {
+              ...owned,
+              updatedAt: now,
+              archivedAt: sql`case when ${aiSkill.archivedByModule} then null else ${aiSkill.archivedAt} end`,
+              archivedByModule: false,
+            },
+          });
+      }
+
+      const keep = provided.map((skill) => skill.id);
+      await tx
+        .update(aiSkill)
+        .set({ archivedAt: now, archivedByModule: true, updatedAt: now })
+        .where(
+          and(
+            eq(aiSkill.workspaceId, workspaceId),
+            isNotNull(aiSkill.moduleId),
+            isNull(aiSkill.archivedAt),
+            keep.length > 0 ? notInArray(aiSkill.id, keep) : undefined,
+          ),
+        );
+    });
+  };
+
   const purgeWorkspace = async (workspaceId: string): Promise<void> => {
     await db.delete(aiRun).where(eq(aiRun.workspaceId, workspaceId));
     await db.delete(aiConversation).where(eq(aiConversation.workspaceId, workspaceId));
     await db.delete(aiAgent).where(eq(aiAgent.workspaceId, workspaceId));
+    await db.delete(aiSkill).where(eq(aiSkill.workspaceId, workspaceId));
     await db.delete(aiSettings).where(eq(aiSettings.workspaceId, workspaceId));
   };
 
@@ -732,8 +847,10 @@ export const createAiStore = (db: Db, clock: () => Date = () => new Date()) => {
     toolCalls,
     settings,
     agents,
+    skills,
     seedAgent,
     syncModuleAgents,
+    syncModuleSkills,
     purgeWorkspace,
     recoverInterrupted,
   };

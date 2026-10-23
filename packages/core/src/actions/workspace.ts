@@ -8,6 +8,10 @@ import {
   AiAgentUsageSchema,
   AiSettingsPatchSchema,
   AiSettingsSchema,
+  AiSkillInputSchema,
+  AiSkillPatchSchema,
+  AiSkillSchema,
+  AiSkillSummarySchema,
 } from '../ai';
 import { coreIds } from '../core-ids';
 import { defineActionSpec } from './define';
@@ -224,6 +228,103 @@ export const aiAgentActions = {
     locked: true,
     params: z.object({ id: z.string() }),
     http: { method: 'delete', path: '/api/workspaces/{workspaceId}/ai/agents/{id}', outputDescription: 'Deleted' },
+  }),
+};
+
+/**
+ * Skills: procedures the workspace writes once and its agents load when a request calls for them. Writing one is
+ * shaping what an agent is told, so it is `ai.manage` and always asks, as shaping an agent does.
+ */
+export const aiSkillActions = {
+  list: defineActionSpec({
+    id: coreIds.actions.list_skills,
+    ai: {
+      tool: 'list_skills',
+      description:
+        'The skills of this workspace: title and when each is for, without the text. Archived ones only when asked for. get_skill reads one in full.',
+    },
+    summary: 'List skills',
+    tags: ['skills'],
+    permission: 'ai.manage',
+    sessionOnly: true,
+    query: z.object({ includeArchived: z.enum(['true', 'false']).optional() }),
+    output: z.array(AiSkillSummarySchema),
+    http: {
+      method: 'get',
+      path: '/api/workspaces/{workspaceId}/ai/skills',
+      outputDescription: 'The skills of this workspace (owners and admins only)',
+    },
+  }),
+  get: defineActionSpec({
+    id: coreIds.actions.get_skill,
+    ai: { tool: 'get_skill', description: 'One skill in full, with its text, by id.' },
+    summary: 'Get a skill',
+    tags: ['skills'],
+    permission: 'ai.manage',
+    sessionOnly: true,
+    params: z.object({ id: z.string() }),
+    output: AiSkillSchema,
+    http: {
+      method: 'get',
+      path: '/api/workspaces/{workspaceId}/ai/skills/{id}',
+      outputDescription: 'The skill, with its text',
+    },
+  }),
+  create: defineActionSpec({
+    id: coreIds.actions.create_skill,
+    ai: {
+      tool: 'create_skill',
+      description:
+        'Write a skill: a title, one line saying when to use it, and the procedure as Markdown. Agents that may use all skills see it at once. Always asks for approval.',
+    },
+    summary: 'Create a skill',
+    tags: ['skills'],
+    permission: 'ai.manage',
+    sessionOnly: true,
+    locked: true,
+    body: AiSkillInputSchema,
+    output: AiSkillSchema,
+    http: {
+      method: 'post',
+      path: '/api/workspaces/{workspaceId}/ai/skills',
+      status: 201,
+      outputDescription: 'The new skill (owners and admins only)',
+    },
+  }),
+  update: defineActionSpec({
+    id: coreIds.actions.update_skill,
+    ai: {
+      tool: 'update_skill',
+      description:
+        'Change a skill; only the given fields change. archived: true archives it, false restores it. Always asks for approval.',
+    },
+    summary: 'Update a skill',
+    tags: ['skills'],
+    permission: 'ai.manage',
+    sessionOnly: true,
+    locked: true,
+    params: z.object({ id: z.string() }),
+    body: AiSkillPatchSchema,
+    output: AiSkillSchema,
+    http: {
+      method: 'patch',
+      path: '/api/workspaces/{workspaceId}/ai/skills/{id}',
+      outputDescription: 'The updated skill',
+    },
+  }),
+  delete: defineActionSpec({
+    id: coreIds.actions.archive_skill,
+    ai: {
+      tool: 'archive_skill',
+      description: 'Archive a skill: no agent lists or loads it any more. Always asks for approval.',
+    },
+    summary: 'Archive a skill',
+    tags: ['skills'],
+    permission: 'ai.manage',
+    sessionOnly: true,
+    locked: true,
+    params: z.object({ id: z.string() }),
+    http: { method: 'delete', path: '/api/workspaces/{workspaceId}/ai/skills/{id}', outputDescription: 'Archived' },
   }),
 };
 

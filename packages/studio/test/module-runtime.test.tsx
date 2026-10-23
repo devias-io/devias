@@ -90,6 +90,7 @@ const installed = (manifest: ModuleManifest): InstalledModule => ({
   core: manifest.core,
   blocks: manifest.blocks,
   agents: manifest.agents,
+  skills: manifest.skills,
   name: manifest.name,
   ...(manifest.website ? { website: manifest.website } : {}),
   ...(manifest.description ? { description: manifest.description } : {}),

@@ -96,6 +96,7 @@ const baseSchema = (): WorkspaceSchema => ({
       core: false,
       blocks: [],
       agents: [],
+      skills: [],
       connections: [],
       variables: [],
       actions: [],

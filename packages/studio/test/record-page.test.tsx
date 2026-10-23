@@ -33,6 +33,7 @@ const moduleWith = (...actions: ActionDefinitionInput[]) => ({
   core: false,
   blocks: [],
   agents: [],
+  skills: [],
   connections: [],
   variables: [],
   actions: actions.map((action) => ActionDefinitionSchema.parse(action)),

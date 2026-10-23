@@ -14,6 +14,7 @@ const installed = (id: string, actions: InstalledModule['actions']): InstalledMo
   core: false,
   blocks: [],
   agents: [],
+  skills: [],
   connections: [],
   variables: [],
   actions,

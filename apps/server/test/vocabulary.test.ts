@@ -115,6 +115,12 @@ const VOCABULARY: Vocabulary = {
     'NotePatch.title',
     'Notification.title',
     'NotificationInput.title',
+    // A procedure the workspace wrote for its agents: authored text, like a workflow.
+    'AiSkill.title',
+    'AiSkillInput.title',
+    'AiSkillPatch.title',
+    'AiSkillSummary.title',
+    'SkillDefinition.title',
     'Task.title',
     'TaskInput.title',
     'TaskPatch.title',

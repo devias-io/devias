@@ -2,6 +2,7 @@ import type { AnyToolDefinition } from '../types';
 import { askUser } from './ask';
 import { connectModule, installModule, listModuleCatalog, listModules } from './modules';
 import { navigate } from './navigate';
+import { useSkill } from './skills';
 import { finishTask } from './tasks';
 import { createApiKey } from './workspace';
 
@@ -14,7 +15,8 @@ export const builtinTools: AnyToolDefinition[] = [
   connectModule,
   createApiKey,
   navigate,
+  useSkill,
   askUser,
 ];
 
-export { askUser, connectModule, createApiKey, installModule, listModuleCatalog, listModules, navigate };
+export { askUser, connectModule, createApiKey, installModule, listModuleCatalog, listModules, navigate, useSkill };

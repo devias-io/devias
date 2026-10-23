@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MODULE_SKILLS_MAX } from '../ai';
 import { hashValue, stableStringify } from '../hash';
 import { IdSchema, ModuleIdSchema } from '../ids';
 import { layoutActionProblem } from '../layout/record-actions';
@@ -21,7 +22,7 @@ import {
   VariableDefinitionSchema,
 } from '../module-runtime';
 import { FilterSchema } from '../query/ir';
-import { AgentDefinitionSchema } from './agents';
+import { AgentDefinitionSchema, SkillDefinitionSchema } from './agents';
 import { normalizeManifest } from './authoring';
 import { BlockDeclarationSchema } from './blocks';
 import { ModuleEnginesSchema, ModulePublisherSchema, PolicyDefinitionSchema } from './consent';
@@ -191,6 +192,8 @@ export const ModuleManifestSchema = z
     pages: z.array(PageDeclarationSchema).default([]),
     /** Agents it ships: made when the module is installed, updated with it, archived when it is uninstalled. */
     agents: z.array(AgentDefinitionSchema).default([]),
+    /** The skills the module ships (see `SkillDefinitionSchema`). */
+    skills: z.array(SkillDefinitionSchema).max(MODULE_SKILLS_MAX).default([]),
     /** How a workspace or a person connects it to its outside service: an API key, an OAuth account. */
     connections: z.array(ConnectionProviderSchema).default([]),
     /** Configuration its code reads: set per workspace, or on the server for OAuth client credentials. */
@@ -313,6 +316,31 @@ export const parseManifest = (input: unknown): ModuleManifest => {
     manifest.agents.map((agent) => agent.id),
     declaresTwice('agent'),
   );
+
+  for (const skill of manifest.skills) {
+    owned('skill', skill.id);
+  }
+
+  unique(
+    manifest.skills.map((skill) => skill.id),
+    declaresTwice('skill'),
+  );
+  const skillIds = new Set(manifest.skills.map((skill) => skill.id));
+
+  for (const agent of manifest.agents) {
+    unique(
+      agent.skillIds,
+      (skill) => `Agent "${agent.id}" of manifest "${manifest.id}" names the skill "${skill}" twice`,
+    );
+
+    for (const skill of agent.skillIds) {
+      if (!skillIds.has(skill)) {
+        throw new Error(
+          `Agent "${agent.id}" of manifest "${manifest.id}" names the skill "${skill}", which the manifest does not declare`,
+        );
+      }
+    }
+  }
   for (const provider of manifest.connections) {
     owned('connection', provider.id);
   }
@@ -601,6 +629,7 @@ export type ManifestDeclarations = Pick<
   | 'core'
   | 'blocks'
   | 'agents'
+  | 'skills'
   | 'connections'
   | 'variables'
   | 'actions'
@@ -621,6 +650,7 @@ export const declarationsOf = (manifest: ManifestDeclarations): ManifestDeclarat
   core: manifest.core,
   blocks: manifest.blocks,
   agents: manifest.agents,
+  skills: manifest.skills,
   connections: manifest.connections,
   variables: manifest.variables,
   actions: manifest.actions,
@@ -639,7 +669,7 @@ export const canonicalManifest = (manifest: ModuleManifest): string =>
   stableStringify(ModuleManifestSchema.parse(manifest));
 export const hashManifest = (manifest: ModuleManifest): string => hashValue(ModuleManifestSchema.parse(manifest));
 
-/** Every id a manifest declares: its objects, their fields, views, layouts, nav items, commands, blocks, agents, actions, connections, events and policies. */
+/** Every id a manifest declares: its objects, their fields, views, layouts, nav items, commands, blocks, agents, skills, actions, connections, events and policies. */
 export const idListOf = (manifest: ModuleManifest): string[] => [
   ...manifest.objects.flatMap((object) => [object.id, ...object.fields.map((field) => field.id)]),
   ...manifest.fields.map((field) => field.id),
@@ -650,6 +680,7 @@ export const idListOf = (manifest: ModuleManifest): string[] => [
   ...manifest.blocks.map((block) => block.id),
   ...manifest.pages.map((page) => page.id),
   ...manifest.agents.map((agent) => agent.id),
+  ...manifest.skills.map((skill) => skill.id),
   ...manifest.actions.map((action) => action.id),
   ...manifest.connections.map((provider) => provider.id),
   ...manifest.events.map((event) => event.id),

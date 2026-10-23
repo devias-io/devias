@@ -30,7 +30,7 @@ import { notificationActions } from './notifications';
 import { activityActions, noteActions, recordActions } from './records';
 import { taskActions } from './tasks';
 import { workflowActions } from './workflows';
-import { aiAgentActions, aiSettingsActions, apiKeyActions, memberActions } from './workspace';
+import { aiAgentActions, aiSettingsActions, aiSkillActions, apiKeyActions, memberActions } from './workspace';
 
 /** Every action core declares, in a stable order. */
 export const ACTIONS = [
@@ -55,6 +55,7 @@ export const ACTIONS = [
   ...Object.values(memberActions),
   ...Object.values(aiSettingsActions),
   ...Object.values(aiAgentActions),
+  ...Object.values(aiSkillActions),
 ];
 
 export { AGENT_ACTIONS, type AgentActionSpec } from './agent-actions';

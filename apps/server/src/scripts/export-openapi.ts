@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
+import { existsSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -32,10 +32,13 @@ const main = async () => {
   const here = path.dirname(fileURLToPath(import.meta.url));
   const core = await documentOf([]);
   const withModules = await documentOf(await loadModules(deviasConfig, { from: import.meta.url }));
-  const targets: [string, typeof core][] = [
-    [path.resolve(here, '../../openapi.json'), core],
-    [path.resolve(here, '../../../../docs/api-reference/openapi.json'), withModules],
-  ];
+  const docsTarget = path.resolve(here, '../../../../docs/api-reference/openapi.json');
+  const targets: [string, typeof core][] = [[path.resolve(here, '../../openapi.json'), core]];
+
+  // The reference copy is written where the documentation lives; without it there is nothing to update.
+  if (existsSync(path.dirname(docsTarget))) {
+    targets.push([docsTarget, withModules]);
+  }
 
   for (const [target, document] of targets) {
     writeFileSync(target, `${JSON.stringify(document, null, 2)}\n`);

@@ -352,6 +352,7 @@ export const AI_TOOL_AREAS = [
   { key: 'people', label: 'People and access' },
   { key: 'notifications', label: 'Notifications' },
   { key: 'agents', label: 'Agents and AI' },
+  { key: 'skills', label: 'Skills' },
   { key: 'interface', label: 'Open things' },
   { key: 'conversation', label: 'Asking the person' },
 ] as const;
@@ -373,6 +374,7 @@ export const ACTION_AREA_BY_TAG: Readonly<Record<string, AiToolArea>> = {
   'api-keys': 'people',
   notifications: 'notifications',
   ai: 'agents',
+  skills: 'skills',
 };
 
 /**
@@ -463,6 +465,58 @@ export type AiSettingsPatch = z.infer<typeof AiSettingsPatchSchema>;
 // Agents
 // ---------------------------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------------------------
+// Skills
+// ---------------------------------------------------------------------------------------------
+
+export const SKILL_TITLE_MAX = 80;
+export const SKILL_DESCRIPTION_MAX = 300;
+export const SKILL_BODY_MAX = 20_000;
+/** Skills a workspace writes itself: the list an agent sees stays short. */
+export const SKILLS_MAX = 50;
+/** Skills one module ships. */
+export const MODULE_SKILLS_MAX = 20;
+
+/** What an agent sees of a skill before it loads it: when to use it, not how. */
+export const AiSkillSummarySchema = z
+  .object({
+    workspaceId: z.string(),
+    /** `workspace.<uuid>` for a skill the workspace wrote, `<module>.<key>` for one a module ships. */
+    id: z.string(),
+    title: z.string(),
+    /** One line saying when the skill is for. */
+    description: z.string(),
+    /** The module that ships it, or null for a skill the workspace wrote. A module's skill follows the module. */
+    moduleId: z.string().nullable(),
+    /** When it was archived; an archived skill is listed and loaded by no agent. */
+    archivedAt: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  })
+  .meta({ id: 'AiSkillSummary' });
+export type AiSkillSummary = z.infer<typeof AiSkillSummarySchema>;
+
+export const AiSkillSchema = AiSkillSummarySchema.extend({
+  /** The procedure, as Markdown. */
+  body: z.string(),
+}).meta({ id: 'AiSkill' });
+export type AiSkill = z.infer<typeof AiSkillSchema>;
+
+export const AiSkillInputSchema = z
+  .object({
+    title: z.string().trim().min(1).max(SKILL_TITLE_MAX),
+    description: z.string().trim().min(1).max(SKILL_DESCRIPTION_MAX).describe('One line saying when to use the skill'),
+    body: z.string().trim().min(1).max(SKILL_BODY_MAX).describe('The procedure to follow, as Markdown'),
+  })
+  .meta({ id: 'AiSkillInput' });
+export type AiSkillInput = z.infer<typeof AiSkillInputSchema>;
+
+/** Only what is given changes. `archived: true` archives the skill and `false` restores it. */
+export const AiSkillPatchSchema = AiSkillInputSchema.partial()
+  .extend({ archived: z.boolean().optional() })
+  .meta({ id: 'AiSkillPatch' });
+export type AiSkillPatch = z.infer<typeof AiSkillPatchSchema>;
+
 /**
  * What a person talks to: instructions, a set of tools and its own approvals. It acts for the person chatting, with
  * their role, and its tool list is the only thing that bounds it. Agents are archived, never deleted, so their
@@ -485,6 +539,8 @@ export const AiAgentSchema = z
     starterPrompts: z.array(z.string()),
     /** Approval modes for this agent, by tool, on top of each tool's own mode. */
     approvalOverrides: z.record(z.string(), ApprovalModeSchema),
+    /** Ids of the skills it may use; null means every active skill, including ones added later. */
+    skills: z.array(z.string()).nullable(),
     /** Whether tasks can be given to it: when one is, it works the task on its own and hands it back for review. */
     takesTasks: z.boolean(),
     /** The module that ships it, or null for an agent the workspace made. A module's agent follows the module. */
@@ -507,6 +563,8 @@ export const AiAgentInputSchema = z
     tools: z.array(z.string()).min(1).max(500).nullable().optional(),
     starterPrompts: z.array(SuggestedPromptSchema).max(SUGGESTED_PROMPTS_MAX).optional(),
     approvalOverrides: z.record(z.string(), ApprovalModeSchema).optional(),
+    /** Ids of the skills it may use, or null for every active skill (the default). */
+    skills: z.array(z.string()).max(SKILLS_MAX).nullable().optional(),
     /** Default false. */
     takesTasks: z.boolean().optional(),
   })
@@ -622,6 +680,15 @@ export interface AiClient {
     /** One agent's conversations, replies and tokens per day (owners and admins). */
     activity(id: string, query?: AiAgentActivityQuery): Promise<AiAgentActivity>;
     /** Archives the agent; `update(id, { archived: false })` restores it. */
+    delete(id: string): Promise<void>;
+  };
+  /** The workspace's skills: procedures agents load when a request calls for them (owners and admins). */
+  skills: {
+    list(opts?: { includeArchived?: boolean }): Promise<AiSkillSummary[]>;
+    get(id: string): Promise<AiSkill>;
+    create(input: AiSkillInput): Promise<AiSkill>;
+    update(id: string, patch: AiSkillPatch): Promise<AiSkill>;
+    /** Archives the skill; `update(id, { archived: false })` restores it. */
     delete(id: string): Promise<void>;
   };
 }
