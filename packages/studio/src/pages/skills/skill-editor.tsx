@@ -188,7 +188,7 @@ export function SkillEditorPage({ skill }: { skill: AiSkill | null }) {
                   maxLength={SKILL_BODY_MAX}
                   className="min-h-72 resize-y font-mono"
                   placeholder={
-                    '1. Look the company up with lookup_records.\n2. Score it from its size and industry.\n3. Add a note with the score.'
+                    '1. Look the company up with lookup_records.\n2. Score it from its size and industry.\n3. Add a comment with the score.'
                   }
                   onChange={(event) => setDraft({ ...draft, body: event.target.value })}
                 />

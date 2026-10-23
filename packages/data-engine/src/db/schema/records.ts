@@ -3,7 +3,7 @@ import { foreignKey, index, jsonb, pgTable, primaryKey, text, uuid } from 'drizz
 import { timestamptz } from './columns';
 import { objectMetadata } from './data-model';
 
-/** Records and what hangs off them: uniqueness keys. Their notes are comments (`comments.ts`). */
+/** Records and what hangs off them: uniqueness keys. Their comments are in `comments.ts`. */
 
 export const record = pgTable(
   'record',

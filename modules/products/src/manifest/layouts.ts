@@ -24,7 +24,7 @@ export const layouts = [
       { blockId: ids.blocks.product_description, label: 'Description' },
       { blockId: ids.blocks.product_prices, label: 'Prices' },
       { blockId: ids.blocks.product_images, label: 'Images' },
-      { blockId: coreIds.blocks.notes, label: 'Notes' },
+      { blockId: coreIds.blocks.comments, label: 'Comments' },
       { blockId: coreIds.blocks.activity, label: 'Activity' },
     ],
     aside: [

@@ -61,7 +61,7 @@ describe('record activity', () => {
     await screen.findByText(/An API key/);
     const kinds = [...document.querySelectorAll('[data-activity]')].map((el) => el.getAttribute('data-activity'));
     expect(kinds).toEqual(['updated', 'updated', 'created']);
-    // Writing about a record is for its notes: there is no box to comment in.
+    // Writing about a record is for its comments: there is no box to comment in.
     expect(screen.queryByRole('textbox')).toBeNull();
     expect(document.querySelector('[data-slot="activity-composer"]')).toBeNull();
     const [stage, several, created] = [...document.querySelectorAll('[data-activity]')];

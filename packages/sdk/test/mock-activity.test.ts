@@ -51,20 +51,20 @@ describe('mock activity', () => {
     expect([...times].sort().reverse()).toEqual(times);
   });
 
-  it('tracks live changes, and a note is not part of the activity', async () => {
+  it('tracks live changes, and a comment is not part of the activity', async () => {
     const client = demo();
     const events: WorkspaceEvent[] = [];
     client.events.subscribe((event) => events.push(event));
     const person = await client.records.create('person', { first_name: 'Eve' });
     await client.records.update('person', person.id, { city: 'Oslo', first_name: 'Eve' });
-    await client.notes.create('person', person.id, { title: 'Ping her on Monday' });
+    await client.comments.create('person', person.id, { title: 'Ping her on Monday' });
 
     const page = await client.activity.list('person', person.id);
     expect(page.items.map((entry) => entry.kind)).toEqual(['updated', 'created']);
     expect(page.items[0]).toMatchObject({ changes: [{ field: 'city', before: null, after: 'Oslo' }] });
 
     await flush();
-    expect(events.map((event) => event.type)).toEqual(['record.created', 'record.updated', 'note.created']);
+    expect(events.map((event) => event.type)).toEqual(['record.created', 'record.updated', 'comment.created']);
     expect((await failure(client.activity.list('person', person.id, { cursor: 'x' }))).code).toBe('INVALID_CURSOR');
   });
 

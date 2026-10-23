@@ -3,8 +3,8 @@ import {
   type EventStreamStatus,
   isDocumentEvent,
   isModuleRuntimeEvent,
-  isNoteEvent,
   isNotificationEvent,
+  isRecordCommentEvent,
   isRecordEvent,
   isTaskEvent,
   isWorkflowEvent,
@@ -47,7 +47,7 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
       pending = [];
       const objects = new Set<string>();
       const changedIds = new Map<string, string[]>();
-      const noted = new Map<string, { object: string; recordId: string }>();
+      const commented = new Map<string, { object: string; recordId: string }>();
       let schemaChanged = false;
       let workflowsChanged = false;
       const documentIds: string[] = [];
@@ -74,8 +74,8 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
           if (event.action === 'created' && event.recipientId === userId && event.notificationId) {
             arrived.push(event.notificationId);
           }
-        } else if (isNoteEvent(event)) {
-          noted.set(`${event.object}/${event.recordId}`, event);
+        } else if (isRecordCommentEvent(event)) {
+          commented.set(`${event.object}/${event.recordId}`, event);
         } else if (isRecordEvent(event)) {
           objects.add(event.object);
           const list = changedIds.get(event.object) ?? [];
@@ -87,8 +87,8 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
       }
 
       // Record changes refresh activity through the records key.
-      for (const { object, recordId } of noted.values()) {
-        void queryClient.invalidateQueries({ queryKey: keys.notes(ws, object, recordId) });
+      for (const { object, recordId } of commented.values()) {
+        void queryClient.invalidateQueries({ queryKey: keys.comments(ws, object, recordId) });
       }
 
       for (const object of objects) {

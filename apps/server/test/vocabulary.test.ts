@@ -110,9 +110,9 @@ const VOCABULARY: Vocabulary = {
     'InputRequest.title',
     // A row in a list of results: a title over a subtitle.
     'LookupHit.title',
-    'Note.title',
-    'NoteInput.title',
-    'NotePatch.title',
+    'RecordComment.title',
+    'RecordCommentInput.title',
+    'RecordCommentPatch.title',
     'Notification.title',
     'NotificationInput.title',
     // A procedure the workspace wrote for its agents: authored text, like a workflow.

@@ -39,19 +39,19 @@ export const RecordEventSchema = z.object({
 });
 export type RecordEvent = z.infer<typeof RecordEventSchema>;
 
-/** A note on a record was written, edited or removed; the record itself did not change. */
-export const NOTE_EVENT_TYPES = ['note.created', 'note.updated', 'note.deleted'] as const;
-export type NoteEventType = (typeof NOTE_EVENT_TYPES)[number];
+/** A comment on a record was written, edited or removed; the record itself did not change. */
+export const RECORD_COMMENT_EVENT_TYPES = ['comment.created', 'comment.updated', 'comment.deleted'] as const;
+export type RecordCommentEventType = (typeof RECORD_COMMENT_EVENT_TYPES)[number];
 
-export const NoteEventSchema = z.object({
+export const RecordCommentEventSchema = z.object({
   ...base,
-  type: z.enum(NOTE_EVENT_TYPES),
+  type: z.enum(RECORD_COMMENT_EVENT_TYPES),
   objectId: z.string(),
   object: z.string(),
   recordId: z.string(),
-  noteId: z.string(),
+  commentId: z.string(),
 });
-export type NoteEvent = z.infer<typeof NoteEventSchema>;
+export type RecordCommentEvent = z.infer<typeof RecordCommentEventSchema>;
 
 export const MetadataEventSchema = z.object({
   ...base,
@@ -216,7 +216,7 @@ export type NotificationEvent = z.infer<typeof NotificationEventSchema>;
 export const WorkspaceEventSchema = z
   .discriminatedUnion('type', [
     RecordEventSchema,
-    NoteEventSchema,
+    RecordCommentEventSchema,
     MetadataEventSchema,
     ModuleAppliedEventSchema,
     WorkflowChangedEventSchema,
@@ -233,7 +233,8 @@ export type WorkspaceEvent = z.infer<typeof WorkspaceEventSchema>;
 
 export const isRecordEvent = (event: WorkspaceEvent): event is RecordEvent => event.type.startsWith('record.');
 
-export const isNoteEvent = (event: WorkspaceEvent): event is NoteEvent => event.type.startsWith('note.');
+export const isRecordCommentEvent = (event: WorkspaceEvent): event is RecordCommentEvent =>
+  event.type.startsWith('comment.');
 
 export const isWorkflowEvent = (event: WorkspaceEvent): event is WorkflowChangedEvent | WorkflowRunEvent =>
   event.type.startsWith('workflow.');

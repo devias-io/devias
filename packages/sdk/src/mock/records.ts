@@ -522,10 +522,10 @@ export const deleteRecords = (store: MockStore, objectName: string, ids: string[
     record.deleted_at = store.now();
     record.updated_at = record.deleted_at;
 
-    // A record's notes go with it.
-    for (const note of store.notes) {
-      if (note.recordId === record.id) {
-        note.deleted = true;
+    // A record's comments go with it.
+    for (const comment of store.comments) {
+      if (comment.recordId === record.id) {
+        comment.deleted = true;
       }
     }
 

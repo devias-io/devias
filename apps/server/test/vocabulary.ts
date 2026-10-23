@@ -4,7 +4,7 @@
  * - `api`: an API name, what code calls a part (`name`, `nameSingular`, `namePlural`); never shown as text;
  * - `party`: what a member, workspace, API key, agent, module or publisher is called (`name`);
  * - `label`: the text people read for a part of the model or the interface;
- * - `title`: the text of a page of work: a document, note, task, conversation, notification or workflow.
+ * - `title`: the text of a page of work: a document, comment, task, conversation, notification or workflow.
  */
 export type Role = 'api' | 'party' | 'label' | 'title';
 

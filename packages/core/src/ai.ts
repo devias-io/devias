@@ -365,7 +365,7 @@ export const ACTION_AREA_BY_TAG: Readonly<Record<string, AiToolArea>> = {
   metadata: 'model',
   records: 'records',
   activity: 'records',
-  notes: 'records',
+  comments: 'records',
   workflows: 'workflows',
   documents: 'documents',
   tasks: 'tasks',

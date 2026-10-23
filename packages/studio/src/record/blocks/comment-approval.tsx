@@ -17,11 +17,11 @@ const text = (value: unknown): string | undefined =>
   typeof value === 'string' && value.trim() ? value.trim() : undefined;
 
 /**
- * The card that asks the person to approve a note the agent wants to write: on which record, and the note as it will
- * read (its title, and its body drawn as Markdown), with the record one click away. The note is the whole question,
+ * The card that asks the person to approve a comment the agent wants to write: on which record, and the comment as it will
+ * read (its title, and its body drawn as Markdown), with the record one click away. The comment is the whole question,
  * so it is shown in full, a long body folded behind "Show more".
  */
-function ConfirmNote({ call, busy, approve, reject }: ApprovalBlockProps) {
+function ConfirmRecordComment({ call, busy, approve, reject }: ApprovalBlockProps) {
   const { slug } = useWorkspace();
   const navigation = useNavigation();
   const { index } = useSchema();
@@ -38,9 +38,9 @@ function ConfirmNote({ call, busy, approve, reject }: ApprovalBlockProps) {
   const pill = 'rounded-full px-3.5';
 
   return (
-    <div data-slot="note-approval" className="flex flex-col gap-3 rounded-2xl bg-muted/60 p-4">
+    <div data-slot="comment-approval" className="flex flex-col gap-3 rounded-2xl bg-muted/60 p-4">
       <p className="text-sm leading-snug">
-        Add a note to{' '}
+        Add a comment to{' '}
         {record.isLoading && object ? (
           <Skeleton className="inline-block h-4 w-28 align-middle" />
         ) : (
@@ -50,11 +50,11 @@ function ConfirmNote({ call, busy, approve, reject }: ApprovalBlockProps) {
       </p>
       <div
         className="flex flex-col gap-1.5 rounded-xl border border-border bg-card px-3.5 py-3"
-        data-slot="note-preview"
+        data-slot="comment-preview"
       >
         <div className="flex items-center gap-2 font-medium">
           <Icon name="file-text" className="size-4 shrink-0 text-muted-foreground" />
-          <span className="min-w-0 break-words">{title ?? 'Untitled note'}</span>
+          <span className="min-w-0 break-words">{title ?? 'Untitled comment'}</span>
         </div>
         {body ? (
           <div className={cn('relative min-w-0', long && !open && 'max-h-40 overflow-hidden')}>
@@ -101,11 +101,11 @@ function ConfirmNote({ call, busy, approve, reject }: ApprovalBlockProps) {
   );
 }
 
-/** Approval widget for writing a note on a record. */
-export const noteApprovalBlock = defineBlockComponent({
-  id: coreIds.blocks.note_approval,
-  label: 'Confirm a note',
+/** Approval widget for writing a comment on a record. */
+export const commentApprovalBlock = defineBlockComponent({
+  id: coreIds.blocks.comment_approval,
+  label: 'Confirm a comment',
   icon: 'file-text',
-  surfaces: { approval: { tools: ['add_record_note'] } },
-  component: ConfirmNote,
+  surfaces: { approval: { tools: ['comment_on_record'] } },
+  component: ConfirmRecordComment,
 });

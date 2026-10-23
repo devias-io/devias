@@ -44,7 +44,7 @@ describe('the quote page', () => {
     expect([...(main?.querySelectorAll('[data-cell]') ?? [])].map((cell) => cell.getAttribute('data-cell'))).toEqual([
       'title',
       'quote_items',
-      'notes',
+      'comments',
       'activity',
     ]);
     expect(screen.getByRole('complementary', { name: 'Quote' })).toBeTruthy();

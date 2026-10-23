@@ -43,8 +43,6 @@ import type {
   ModuleVariable,
   NavItem,
   NavItemInput,
-  Note,
-  NotePage,
   Notification,
   NotificationInput,
   NotificationPage,
@@ -56,6 +54,8 @@ import type {
   Page,
   PlanResult,
   Query,
+  RecordComment,
+  RecordCommentPage,
   RecordData,
   Task,
   TaskActivityEntry,
@@ -214,17 +214,18 @@ export const createClient = (options: ClientOptions): HttpDeviasClient => {
           limit: query?.limit,
         }),
     },
-    notes: {
+    comments: {
       list: (object, id, query) =>
-        http.get<NotePage>(`${ws}/records/${enc(object)}/${enc(id)}/notes`, {
+        http.get<RecordCommentPage>(`${ws}/records/${enc(object)}/${enc(id)}/comments`, {
           cursor: query?.cursor,
           limit: query?.limit,
         }),
-      create: (object, id, input) => http.post<Note>(`${ws}/records/${enc(object)}/${enc(id)}/notes`, input),
-      update: (object, id, noteId, patch) =>
-        http.patch<Note>(`${ws}/records/${enc(object)}/${enc(id)}/notes/${enc(noteId)}`, patch),
-      delete: async (object, id, noteId) => {
-        await http.delete(`${ws}/records/${enc(object)}/${enc(id)}/notes/${enc(noteId)}`);
+      create: (object, id, input) =>
+        http.post<RecordComment>(`${ws}/records/${enc(object)}/${enc(id)}/comments`, input),
+      update: (object, id, commentId, patch) =>
+        http.patch<RecordComment>(`${ws}/records/${enc(object)}/${enc(id)}/comments/${enc(commentId)}`, patch),
+      delete: async (object, id, commentId) => {
+        await http.delete(`${ws}/records/${enc(object)}/${enc(id)}/comments/${enc(commentId)}`);
       },
     },
     documents: {

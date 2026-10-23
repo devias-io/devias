@@ -275,7 +275,7 @@ export const layoutActions = crud({
     list: {
       tool: 'list_layouts',
       description:
-        "List layouts: what makes up a record's page. `shell` is its shape, and a layout holds only that shape's keys: `tabs` (a header block `header`, and `tabs`, each a 12-column grid of blocks; module actions and blocks that place themselves, such as notes and activity, get their own tabs), `column` (one centered column of `blocks` under a slim toolbar, for things people write in: a title and a body) or `split` (a `main` column and an `aside` on the right, like an issue). `actions` lists the module actions the page offers, a button each in its top bar (filled for the primary ones): exactly what shows, so none when empty. An action fits a page when it has a `record` field for the page's object (list_modules shows them). One per object at most.",
+        "List layouts: what makes up a record's page. `shell` is its shape, and a layout holds only that shape's keys: `tabs` (a header block `header`, and `tabs`, each a 12-column grid of blocks; module actions and blocks that place themselves, such as comments and activity, get their own tabs), `column` (one centered column of `blocks` under a slim toolbar, for things people write in: a title and a body) or `split` (a `main` column and an `aside` on the right, like an issue). `actions` lists the module actions the page offers, a button each in its top bar (filled for the primary ones): exactly what shows, so none when empty. An action fits a page when it has a `record` field for the page's object (list_modules shows them). One per object at most.",
     },
   },
 });

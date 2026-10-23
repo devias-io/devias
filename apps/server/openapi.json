@@ -242,7 +242,7 @@
               },
               "type": {
                 "type": "string",
-                "enum": ["note.created", "note.updated", "note.deleted"]
+                "enum": ["comment.created", "comment.updated", "comment.deleted"]
               },
               "objectId": {
                 "type": "string"
@@ -253,7 +253,7 @@
               "recordId": {
                 "type": "string"
               },
-              "noteId": {
+              "commentId": {
                 "type": "string"
               }
             },
@@ -266,7 +266,7 @@
               "objectId",
               "object",
               "recordId",
-              "noteId"
+              "commentId"
             ]
           },
           {
@@ -3933,13 +3933,13 @@
         },
         "required": ["field"]
       },
-      "NotePage": {
+      "RecordCommentPage": {
         "type": "object",
         "properties": {
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Note"
+              "$ref": "#/components/schemas/RecordComment"
             }
           },
           "nextCursor": {
@@ -3951,7 +3951,7 @@
         },
         "required": ["items", "nextCursor", "total"]
       },
-      "Note": {
+      "RecordComment": {
         "type": "object",
         "properties": {
           "id": {
@@ -3981,7 +3981,7 @@
         },
         "required": ["id", "object", "recordId", "title", "body", "author", "createdAt", "updatedAt"]
       },
-      "NoteInput": {
+      "RecordCommentInput": {
         "type": "object",
         "properties": {
           "title": {
@@ -3996,7 +3996,7 @@
         },
         "required": ["title"]
       },
-      "NotePatch": {
+      "RecordCommentPatch": {
         "type": "object",
         "properties": {
           "title": {
@@ -12655,11 +12655,11 @@
         }
       }
     },
-    "/api/workspaces/{workspaceId}/records/{object}/{id}/notes": {
+    "/api/workspaces/{workspaceId}/records/{object}/{id}/comments": {
       "get": {
-        "summary": "List a record's notes",
+        "summary": "List a record's comments",
         "description": "Newest first. Page with `nextCursor`; `total` is how many the record has.",
-        "tags": ["notes"],
+        "tags": ["comments"],
         "security": [
           {
             "cookieAuth": []
@@ -12718,11 +12718,11 @@
         ],
         "responses": {
           "200": {
-            "description": "A page of notes",
+            "description": "A page of comments",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NotePage"
+                  "$ref": "#/components/schemas/RecordCommentPage"
                 }
               }
             }
@@ -12780,8 +12780,8 @@
         }
       },
       "post": {
-        "summary": "Add a note to a record",
-        "tags": ["notes"],
+        "summary": "Add a comment to a record",
+        "tags": ["comments"],
         "security": [
           {
             "cookieAuth": []
@@ -12821,23 +12821,23 @@
           }
         ],
         "requestBody": {
-          "description": "The note: a title and an optional body",
+          "description": "The comment: a title and an optional body",
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NoteInput"
+                "$ref": "#/components/schemas/RecordCommentInput"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "The note",
+            "description": "The comment",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Note"
+                  "$ref": "#/components/schemas/RecordComment"
                 }
               }
             }
@@ -12895,11 +12895,11 @@
         }
       }
     },
-    "/api/workspaces/{workspaceId}/records/{object}/{id}/notes/{noteId}": {
+    "/api/workspaces/{workspaceId}/records/{object}/{id}/comments/{commentId}": {
       "patch": {
-        "summary": "Edit a note",
-        "description": "Authors can edit their own notes; owners and admins any.",
-        "tags": ["notes"],
+        "summary": "Edit a comment",
+        "description": "Authors can edit their own comments; owners and admins any.",
+        "tags": ["comments"],
         "security": [
           {
             "cookieAuth": []
@@ -12942,7 +12942,7 @@
               "type": "string"
             },
             "required": true,
-            "name": "noteId",
+            "name": "commentId",
             "in": "path"
           }
         ],
@@ -12952,18 +12952,18 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NotePatch"
+                "$ref": "#/components/schemas/RecordCommentPatch"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "The note",
+            "description": "The comment",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Note"
+                  "$ref": "#/components/schemas/RecordComment"
                 }
               }
             }
@@ -13021,9 +13021,9 @@
         }
       },
       "delete": {
-        "summary": "Remove a note",
-        "description": "Authors can remove their own notes; owners and admins any.",
-        "tags": ["notes"],
+        "summary": "Remove a comment",
+        "description": "Authors can remove their own comments; owners and admins any.",
+        "tags": ["comments"],
         "security": [
           {
             "cookieAuth": []
@@ -13066,7 +13066,7 @@
               "type": "string"
             },
             "required": true,
-            "name": "noteId",
+            "name": "commentId",
             "in": "path"
           }
         ],

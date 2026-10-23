@@ -9,7 +9,7 @@ afterEach(cleanup);
 const pending = (input: unknown): ToolCall => ({
   id: 'call1',
   toolUseId: 'tu1',
-  name: 'add_record_note',
+  name: 'comment_on_record',
   input,
   status: 'pending',
   requiresApproval: true,
@@ -23,7 +23,7 @@ const show = (call: ToolCall, onResolve: (approved: boolean) => void) =>
   );
 
 const card = async (container: HTMLElement) =>
-  within(await waitFor(() => container.querySelector('[data-slot="note-approval"]') as HTMLElement));
+  within(await waitFor(() => container.querySelector('[data-slot="comment-approval"]') as HTMLElement));
 
 describe('a call that waits while the turn is still streaming', () => {
   it('is not drawn as "Needs approval" before the panel can answer it, and then becomes the card', async () => {
@@ -48,8 +48,8 @@ describe('a call that waits while the turn is still streaming', () => {
   });
 });
 
-describe('the note approval card', () => {
-  it('says which record the note goes on and shows the note as it will read, body in Markdown', async () => {
+describe('the comment approval card', () => {
+  it('says which record the comment goes on and shows the comment as it will read, body in Markdown', async () => {
     const onResolve = vi.fn();
     const { container } = show(
       pending({
@@ -62,10 +62,10 @@ describe('the note approval card', () => {
     );
     const view = await card(container);
     // The card replaces the plain one, which listed the raw id, body and title.
-    expect(container.querySelector('[data-widget="core.note_approval"]')).toBeTruthy();
+    expect(container.querySelector('[data-widget="core.comment_approval"]')).toBeTruthy();
     expect(await view.findByText('Ada')).toBeTruthy();
-    expect(view.getByText('Add a note to', { exact: false })).toBeTruthy();
-    const preview = within(container.querySelector('[data-slot="note-preview"]') as HTMLElement);
+    expect(view.getByText('Add a comment to', { exact: false })).toBeTruthy();
+    const preview = within(container.querySelector('[data-slot="comment-preview"]') as HTMLElement);
     expect(preview.getByText('Missing contact info')).toBeTruthy();
     expect(preview.getAllByRole('listitem').map((li) => li.textContent)).toEqual([
       'Email and phone',
@@ -92,9 +92,9 @@ describe('the note approval card', () => {
     const { container } = show(pending({ object: 'person', id: 'p1', body: 'No title' }), vi.fn());
     const view = await card(container);
     expect((view.getByRole('button', { name: 'Approve' }) as HTMLButtonElement).disabled).toBe(true);
-    expect(view.getByText('Untitled note')).toBeTruthy();
+    expect(view.getByText('Untitled comment')).toBeTruthy();
     cleanup();
     const other = show({ ...pending({ object: 'person', ids: ['p1'] }), name: 'delete_records' }, vi.fn());
-    expect(other.container.querySelector('[data-slot="note-approval"]')).toBeNull();
+    expect(other.container.querySelector('[data-slot="comment-approval"]')).toBeNull();
   });
 });

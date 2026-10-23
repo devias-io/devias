@@ -188,7 +188,7 @@ const TOOLS: {
 ];
 
 const HELP =
-  "I'm the mock agent (no model is connected). Try **how many companies**, **open Ada**, **ask me** for a question, **note** for a note, or **delete Ada** to see an approval.";
+  "I'm the mock agent (no model is connected). Try **how many companies**, **open Ada**, **ask me** for a question, **comment** for a comment, or **delete Ada** to see an approval.";
 
 const cleanPrompts = (prompts: readonly string[]): string[] => [
   ...new Set(prompts.map((prompt) => prompt.trim()).filter(Boolean)),
@@ -534,18 +534,18 @@ export const createMockAi = (store: MockStore, options: MockAiOptions = {}): AiC
       const del = lower.match(/^(?:delete|remove)\s+(.+)$/);
       const open = lower.match(/^(?:open|show|go to)\s+(.+)$/);
 
-      if (/^(?:add a )?note\b/.test(lower)) {
+      if (/^(?:add a )?comment\b/.test(lower)) {
         const first = listRecords(store, { object: 'person', limit: 1 }).items[0];
 
         if (!first) {
-          await say('There is no person to write a note on yet.');
+          await say('There is no person to write a comment on yet.');
           finishMessage('end_turn');
           done();
 
           return;
         }
 
-        await say('I will leave a note on the first person. Approve to continue.');
+        await say('I will leave a comment on the first person. Approve to continue.');
         const input = {
           object: 'person',
           id: first.id,
@@ -555,7 +555,7 @@ export const createMockAi = (store: MockStore, options: MockAiOptions = {}): AiC
         const call: ToolCall = {
           id: newId(),
           toolUseId: `toolu_${newId().slice(0, 8)}`,
-          name: 'add_record_note',
+          name: 'comment_on_record',
           input,
           status: 'pending',
           requiresApproval: true,

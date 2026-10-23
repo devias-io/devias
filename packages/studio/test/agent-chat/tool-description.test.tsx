@@ -39,11 +39,11 @@ describe('the brief of a tool description', () => {
 
 describe('ToolDescription', () => {
   it('shows the brief and the full text on request', () => {
-    render(<ToolDescription text="Add a note to a record. Markdown works; it asks for approval." />);
-    expect(screen.getByText('Add a note to a record.')).toBeTruthy();
+    render(<ToolDescription text="Add a comment to a record. Markdown works; it asks for approval." />);
+    expect(screen.getByText('Add a comment to a record.')).toBeTruthy();
     expect(screen.queryByText(/Markdown works/)).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'More' }));
-    expect(screen.getByText('Add a note to a record. Markdown works; it asks for approval.')).toBeTruthy();
+    expect(screen.getByText('Add a comment to a record. Markdown works; it asks for approval.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Less' }));
     expect(screen.queryByText(/Markdown works/)).toBeNull();
   });

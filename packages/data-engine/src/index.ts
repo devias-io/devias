@@ -17,9 +17,9 @@ import { createModuleKvService, type ModuleKvService } from './modules/kv';
 import { createModuleEventsService, type ModuleEventsService } from './modules/module-events';
 import { createSecretBox } from './modules/secret-box';
 import { createModuleVariablesService, type ModuleVariablesService } from './modules/variables';
-import { createNoteService, type NoteService } from './notes/service';
 import { createNotificationService, type NotificationService } from './notifications/service';
 import { authorize, can } from './permissions/policy';
+import { createRecordCommentService, type RecordCommentService } from './record-comments/service';
 import { createRecordService, type RecordService } from './records/service';
 import { createTaskService, type TaskService } from './tasks/service';
 import { createWorkflowService, type WorkflowService } from './workflows/service';
@@ -50,8 +50,8 @@ export interface DataEngine {
   records: RecordService;
   /** A record's history. */
   activity: ActivityService;
-  /** A record's notes. */
-  notes: NoteService;
+  /** A record's comments. */
+  comments: RecordCommentService;
   /** Documents: titled pages of rich text, in tables of their own. */
   documents: DocumentService;
   /** Tasks: work handed between people and agents, in tables of their own. */
@@ -90,7 +90,7 @@ export const createDataEngine = (options: DataEngineOptions): DataEngine => {
   const metadata = createMetadataService({ db, cache, store, bus, clock, logger });
   const records = createRecordService({ db, metadata, dataSource, bus, clock });
   const activity = createActivityService({ db, metadata });
-  const notes = createNoteService({ db, metadata, dataSource, bus, clock });
+  const comments = createRecordCommentService({ db, metadata, dataSource, bus, clock });
   const documents = createDocumentService({ db, metadata, bus, clock });
   const tasks = createTaskService({ db, metadata, bus, clock });
   const modules = createModuleService({ db, cache, store, dataSource, bus, clock, logger });
@@ -123,7 +123,7 @@ export const createDataEngine = (options: DataEngineOptions): DataEngine => {
     logger,
     records,
     activity,
-    notes,
+    comments,
     documents,
     tasks,
     metadata,
@@ -205,7 +205,6 @@ export type { IncomingEvent, ModuleEventsService } from './modules/module-events
 export * from './modules/reconcile';
 export { createSecretBox, deriveKey, isSealed, type SecretBox } from './modules/secret-box';
 export type { ModuleVariablesService } from './modules/variables';
-export type { NoteService } from './notes/service';
 export {
   createNotificationService,
   type NotificationSendInput,
@@ -214,6 +213,7 @@ export {
 } from './notifications/service';
 export * from './permissions/policy';
 export * from './query/validate';
+export type { RecordCommentService } from './record-comments/service';
 export { BATCH_MAX, type BatchInput, type BatchResult, type RecordService } from './records/service';
 export * from './scoped';
 export type { AssigneePort, TaskService } from './tasks/service';

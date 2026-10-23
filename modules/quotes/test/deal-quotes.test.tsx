@@ -47,7 +47,7 @@ describe('the deal quotes block', () => {
     const main = document.querySelector('[data-slot="split-main"]');
     const order = [...(main?.querySelectorAll('[data-cell]') ?? [])].map((node) => node.getAttribute('data-block'));
     // The CRM's cells in their order, with Quotes slipped in after the stage.
-    expect(order.slice(0, 4)).toEqual(['core.title', 'crm.deal_stage', 'quotes.deal_quotes', 'core.notes']);
+    expect(order.slice(0, 4)).toEqual(['core.title', 'crm.deal_stage', 'quotes.deal_quotes', 'core.comments']);
     expect(await within(cell).findByText(/No quote yet/)).toBeTruthy();
     expect(within(cell).getByRole('heading', { name: 'Quotes' })).toBeTruthy();
   });

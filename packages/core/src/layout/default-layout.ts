@@ -2,7 +2,7 @@ import { coreIds } from '../core-ids';
 import type { FieldMetadata, ObjectMetadata, SchemaIndex, TabsLayout } from '../metadata/schema';
 
 /**
- * When an object has no layout, the studio renders this one: a Details tab with all the fields, then Notes and
+ * When an object has no layout, the studio renders this one: a Details tab with all the fields, then Comments and
  * Activity tabs, then one tab of related records per inverse relation pointing at this object.
  */
 export const generateDefaultLayout = (index: SchemaIndex, object: ObjectMetadata): TabsLayout => {
@@ -33,7 +33,7 @@ export const generateDefaultLayout = (index: SchemaIndex, object: ObjectMetadata
           },
         ],
       },
-      { name: 'notes', label: 'Notes', blocks: [{ name: 'notes', blockId: coreIds.blocks.notes }] },
+      { name: 'comments', label: 'Comments', blocks: [{ name: 'comments', blockId: coreIds.blocks.comments }] },
       {
         name: 'activity',
         label: 'Activity',

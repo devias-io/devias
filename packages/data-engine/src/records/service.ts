@@ -386,7 +386,7 @@ export const createRecordService = (deps: RecordServiceDeps): RecordService => {
 
       const allDeletedIds = [...deletedIds, ...cascadedDeletes.flatMap((level) => level.ids)];
 
-      // A record's notes go with it; the record's history stays in the event log.
+      // A record's comments go with it; the record's history stays in the event log.
       if (allDeletedIds.length > 0) {
         await runRaw(
           tx,

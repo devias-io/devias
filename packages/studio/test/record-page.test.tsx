@@ -88,13 +88,13 @@ const renderCompany = (actions: ActionDefinitionInput[] = [], layoutActions?: La
 };
 
 describe('record page', () => {
-  it('shows the fields in a Details tab, then the notes, the activity and related records as tabs after it', async () => {
+  it('shows the fields in a Details tab, then the comments, the activity and related records as tabs after it', async () => {
     renderCompany();
     const details = await screen.findByRole('tab', { name: 'Details' });
-    // Details first, then Notes and Activity, then a tab per relation pointing at the record, by its title alone (no count).
+    // Details first, then Comments and Activity, then a tab per relation pointing at the record, by its title alone (no count).
     expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
       'Details',
-      'Notes',
+      'Comments',
       'Activity',
       'People',
     ]);

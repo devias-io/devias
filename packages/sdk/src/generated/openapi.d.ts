@@ -3756,7 +3756,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/workspaces/{workspaceId}/records/{object}/{id}/notes": {
+    "/api/workspaces/{workspaceId}/records/{object}/{id}/comments": {
         parameters: {
             query?: never;
             header?: never;
@@ -3764,7 +3764,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List a record's notes
+         * List a record's comments
          * @description Newest first. Page with `nextCursor`; `total` is how many the record has.
          */
         get: {
@@ -3785,13 +3785,13 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description A page of notes */
+                /** @description A page of comments */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["NotePage"];
+                        "application/json": components["schemas"]["RecordCommentPage"];
                     };
                 };
                 /** @description Validation error or invalid cursor */
@@ -3842,7 +3842,7 @@ export interface paths {
             };
         };
         put?: never;
-        /** Add a note to a record */
+        /** Add a comment to a record */
         post: {
             parameters: {
                 query?: never;
@@ -3856,20 +3856,20 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            /** @description The note: a title and an optional body */
+            /** @description The comment: a title and an optional body */
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["NoteInput"];
+                    "application/json": components["schemas"]["RecordCommentInput"];
                 };
             };
             responses: {
-                /** @description The note */
+                /** @description The comment */
                 201: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["Note"];
+                        "application/json": components["schemas"]["RecordComment"];
                     };
                 };
                 /** @description Validation error or invalid cursor */
@@ -3925,7 +3925,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/workspaces/{workspaceId}/records/{object}/{id}/notes/{noteId}": {
+    "/api/workspaces/{workspaceId}/records/{object}/{id}/comments/{commentId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -3936,8 +3936,8 @@ export interface paths {
         put?: never;
         post?: never;
         /**
-         * Remove a note
-         * @description Authors can remove their own notes; owners and admins any.
+         * Remove a comment
+         * @description Authors can remove their own comments; owners and admins any.
          */
         delete: {
             parameters: {
@@ -3949,7 +3949,7 @@ export interface paths {
                     /** @description Object API name (nameSingular) */
                     object: string;
                     id: string;
-                    noteId: string;
+                    commentId: string;
                 };
                 cookie?: never;
             };
@@ -3994,8 +3994,8 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * Edit a note
-         * @description Authors can edit their own notes; owners and admins any.
+         * Edit a comment
+         * @description Authors can edit their own comments; owners and admins any.
          */
         patch: {
             parameters: {
@@ -4007,24 +4007,24 @@ export interface paths {
                     /** @description Object API name (nameSingular) */
                     object: string;
                     id: string;
-                    noteId: string;
+                    commentId: string;
                 };
                 cookie?: never;
             };
             /** @description The title and/or the body to change */
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["NotePatch"];
+                    "application/json": components["schemas"]["RecordCommentPatch"];
                 };
             };
             responses: {
-                /** @description The note */
+                /** @description The comment */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["Note"];
+                        "application/json": components["schemas"]["RecordComment"];
                     };
                 };
                 /** @description Validation error or invalid cursor */
@@ -10502,11 +10502,11 @@ export interface components {
             actor: components["schemas"]["Actor"];
             occurredAt: string;
             /** @enum {string} */
-            type: "note.created" | "note.updated" | "note.deleted";
+            type: "comment.created" | "comment.updated" | "comment.deleted";
             objectId: string;
             object: string;
             recordId: string;
-            noteId: string;
+            commentId: string;
         } | {
             sequence: number;
             workspaceId: string;
@@ -11695,12 +11695,12 @@ export interface components {
             before?: unknown;
             after?: unknown;
         };
-        NotePage: {
-            items: components["schemas"]["Note"][];
+        RecordCommentPage: {
+            items: components["schemas"]["RecordComment"][];
             nextCursor: string | null;
             total: number;
         };
-        Note: {
+        RecordComment: {
             id: string;
             object: string;
             recordId: string;
@@ -11710,11 +11710,11 @@ export interface components {
             createdAt: string;
             updatedAt: string;
         };
-        NoteInput: {
+        RecordCommentInput: {
             title: string;
             body?: string;
         };
-        NotePatch: {
+        RecordCommentPatch: {
             title?: string;
             body?: string;
         };

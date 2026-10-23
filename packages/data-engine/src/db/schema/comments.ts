@@ -3,9 +3,9 @@ import { check, index, jsonb, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 import { timestamptz } from './columns';
 
 /**
- * What people and agents write on something: a comment on a task or a document, or a note on a record (which has a
+ * What people and agents write on something: a comment on a task or a document, or a comment on a record (which has a
  * title). Content, not a signal: it can be edited and removed, and it outlives anything the event log may someday
- * drop. Writing one also appends an event (`commented`, `note.created`) so open pages refresh. The entity is named by
+ * drop. Writing one also appends an event (`commented`, `comment.created`) so open pages refresh. The entity is named by
  * kind and id with no foreign key: they are soft-deleted, and a workspace is purged as a whole.
  */
 export const comment = pgTable(
@@ -27,7 +27,7 @@ export const comment = pgTable(
     /** When a top-level comment was resolved, and by whom. */
     resolvedAt: timestamptz(),
     resolvedBy: jsonb().$type<{ kind: string; id: string }>(),
-    /** A note's title; comments have none. */
+    /** A record comment's title; task and document comments have none. */
     title: text(),
     /** Markdown. */
     body: text().notNull().default(''),

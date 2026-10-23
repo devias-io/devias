@@ -153,16 +153,16 @@ export const rowToEvent = (workspaceId: string, row: RawEventRow): WorkspaceEven
         ...(importId ? { importId } : {}),
       };
     }
-    case 'note.created':
-    case 'note.updated':
-    case 'note.deleted':
+    case 'comment.created':
+    case 'comment.updated':
+    case 'comment.deleted':
       return {
         ...base,
         type: row.type,
         objectId: row.object_id ?? '',
         object: row.object_name ?? '',
         recordId: row.record_id ?? '',
-        noteId: row.entity_id ?? '',
+        commentId: row.entity_id ?? '',
       };
     case 'metadata.changed':
       return {

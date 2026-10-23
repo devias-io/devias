@@ -42,9 +42,9 @@ export const coreBlockInputs = [
     surfaces: ['record'],
   }),
   block({
-    id: coreIds.blocks.notes,
-    label: 'Notes',
-    description: "The record's notes, with a box to write one.",
+    id: coreIds.blocks.comments,
+    label: 'Comments',
+    description: "The record's comments, with a box to write one.",
     surfaces: ['record'],
   }),
   block({
@@ -102,9 +102,9 @@ export const coreBlockInputs = [
     surfaces: ['panel'],
   }),
   block({
-    id: coreIds.blocks.note_approval,
-    label: 'Confirm a note',
-    description: 'Approval card for a note the agent writes on a record.',
+    id: coreIds.blocks.comment_approval,
+    label: 'Confirm a comment',
+    description: 'Approval card for a comment the agent writes on a record.',
     surfaces: ['approval'],
   }),
   block({

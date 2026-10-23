@@ -158,7 +158,7 @@ export type LayoutBlock = z.infer<typeof LayoutBlockSchema>;
 
 /**
  * A cell as someone writes it: the `name` is left out unless the same block appears twice in the layout. It defaults to
- * the name the block ends with (`core.notes` is `notes`), so a stored cell always has one.
+ * the name the block ends with (`core.comments` is `comments`), so a stored cell always has one.
  */
 const cellName = z
   .string()

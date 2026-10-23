@@ -15,11 +15,11 @@ import {
   type ModuleEvent,
   type ModuleManifest,
   type NavItem,
-  type Note,
   type Notification,
   newId,
   type ObjectMetadata,
   personOf,
+  type RecordComment,
   type RecordData,
   type SchemaIndex,
   type Task,
@@ -53,8 +53,8 @@ export interface MockActivityRow {
   entry: ActivityEntry;
 }
 
-/** A note on a record. Removed notes stay (ids stay unique) but drop out of the lists. */
-export interface MockNote extends Note {
+/** A comment on a record. Removed comments stay (ids stay unique) but drop out of the lists. */
+export interface MockRecordComment extends RecordComment {
   objectId: string;
   deleted?: boolean;
 }
@@ -164,8 +164,8 @@ export class MockStore {
   events: WorkspaceEvent[] = [];
   /** Every record's history, oldest first. */
   activity: MockActivityRow[] = [];
-  /** Every record's notes, in the order they were written. */
-  notes: MockNote[] = [];
+  /** Every record's comments, in the order they were written. */
+  comments: MockRecordComment[] = [];
   /** Every document, in the order they were made. */
   documents: MockDocument[] = [];
   /** The timelines of all documents, oldest first. */

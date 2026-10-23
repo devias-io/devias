@@ -1,16 +1,16 @@
 import {
   type Actor,
-  decodeNoteCursor,
-  encodeNoteCursor,
-  NOTES_DEFAULT_LIMIT,
-  type Note,
-  type NoteInput,
-  NoteInputSchema,
-  type NotePage,
-  type NotePatch,
-  NotePatchSchema,
-  type NoteQuery,
+  decodeRecordCommentCursor,
+  encodeRecordCommentCursor,
   newId,
+  RECORD_COMMENTS_DEFAULT_LIMIT,
+  type RecordComment,
+  type RecordCommentInput,
+  RecordCommentInputSchema,
+  type RecordCommentPage,
+  type RecordCommentPatch,
+  RecordCommentPatchSchema,
+  type RecordCommentQuery,
 } from '@devias/core';
 import { sql } from 'drizzle-orm';
 import { isAdmin, sameActor } from '../authorship';
@@ -24,14 +24,20 @@ import type { MetadataService } from '../metadata/service';
 import { authorize } from '../permissions/policy';
 import { resolveObject } from '../query/validate';
 
-export interface NoteService {
-  list(ctx: EngineContext, object: string, id: string, query?: NoteQuery): Promise<NotePage>;
-  create(ctx: EngineContext, object: string, id: string, input: NoteInput): Promise<Note>;
-  update(ctx: EngineContext, object: string, id: string, noteId: string, patch: NotePatch): Promise<Note>;
-  delete(ctx: EngineContext, object: string, id: string, noteId: string): Promise<void>;
+export interface RecordCommentService {
+  list(ctx: EngineContext, object: string, id: string, query?: RecordCommentQuery): Promise<RecordCommentPage>;
+  create(ctx: EngineContext, object: string, id: string, input: RecordCommentInput): Promise<RecordComment>;
+  update(
+    ctx: EngineContext,
+    object: string,
+    id: string,
+    commentId: string,
+    patch: RecordCommentPatch,
+  ): Promise<RecordComment>;
+  delete(ctx: EngineContext, object: string, id: string, commentId: string): Promise<void>;
 }
 
-export interface NoteServiceDeps {
+export interface RecordCommentServiceDeps {
   db: Db;
   metadata: MetadataService;
   dataSource: DataSource;
@@ -39,7 +45,7 @@ export interface NoteServiceDeps {
   clock: () => Date;
 }
 
-interface NoteRow extends Record<string, unknown> {
+interface RecordCommentRow extends Record<string, unknown> {
   id: string;
   record_id: string;
   author: unknown;
@@ -49,8 +55,8 @@ interface NoteRow extends Record<string, unknown> {
   updated_at: unknown;
 }
 
-/** A note as the service reads it: the comment table's columns under the note's names. */
-const NOTE_COLUMNS = sql.raw(
+/** A comment as the service reads it: the comment table's columns under the comment's names. */
+const RECORD_COMMENT_COLUMNS = sql.raw(
   'id, entity_id AS record_id, actor AS author, title, body, created_at, COALESCE(edited_at, created_at) AS updated_at',
 );
 
@@ -62,8 +68,8 @@ const assertUuid = (id: string, what: string) => {
   }
 };
 
-/** A record's notes, newest first. Notes belong to the record: its permissions decide who reads and writes them. */
-export const createNoteService = (deps: NoteServiceDeps): NoteService => {
+/** A record's comments, newest first. Comments belong to the record: its permissions decide who reads and writes them. */
+export const createRecordCommentService = (deps: RecordCommentServiceDeps): RecordCommentService => {
   const { db, metadata, dataSource, bus, clock } = deps;
 
   const resolve = async (ctx: EngineContext, objectName: string) => {
@@ -72,7 +78,7 @@ export const createNoteService = (deps: NoteServiceDeps): NoteService => {
     return resolveObject(snapshot.index, objectName);
   };
 
-  const toNote = (objectName: string, row: NoteRow): Note => ({
+  const toRecordComment = (objectName: string, row: RecordCommentRow): RecordComment => ({
     id: row.id,
     object: objectName,
     recordId: row.record_id,
@@ -83,15 +89,15 @@ export const createNoteService = (deps: NoteServiceDeps): NoteService => {
     updatedAt: toIso(row.updated_at),
   });
 
-  /** Writes one note event in its own transaction, together with `write`. */
-  const withNoteEvent = async <T>(
+  /** Writes one comment event in its own transaction, together with `write`. */
+  const withRecordCommentEvent = async <T>(
     ctx: EngineContext,
     event: {
-      type: 'note.created' | 'note.updated' | 'note.deleted';
+      type: 'comment.created' | 'comment.updated' | 'comment.deleted';
       objectId: string;
       objectName: string;
       recordId: string;
-      noteId: string;
+      commentId: string;
     },
     write: (tx: Db, now: Date) => Promise<T>,
   ): Promise<{ value: T; now: Date }> => {
@@ -109,8 +115,8 @@ export const createNoteService = (deps: NoteServiceDeps): NoteService => {
           objectId: event.objectId,
           objectName: event.objectName,
           recordId: event.recordId,
-          entity: 'note',
-          entityId: event.noteId,
+          entity: 'comment',
+          entityId: event.commentId,
         },
       ]);
       await bus.publish(tx, ctx.workspaceId, { seq });
@@ -122,25 +128,30 @@ export const createNoteService = (deps: NoteServiceDeps): NoteService => {
     return { value, now };
   };
 
-  const loadNote = async (tx: Db, ctx: EngineContext, recordId: string, noteId: string): Promise<NoteRow> => {
-    const rows = await runRaw<NoteRow>(
+  const loadRecordComment = async (
+    tx: Db,
+    ctx: EngineContext,
+    recordId: string,
+    commentId: string,
+  ): Promise<RecordCommentRow> => {
+    const rows = await runRaw<RecordCommentRow>(
       tx,
-      sql`SELECT ${NOTE_COLUMNS} FROM comment
-        WHERE id = ${noteId}::uuid AND workspace_id = ${ctx.workspaceId} AND entity_kind = 'record' AND entity_id = ${recordId}::uuid
+      sql`SELECT ${RECORD_COMMENT_COLUMNS} FROM comment
+        WHERE id = ${commentId}::uuid AND workspace_id = ${ctx.workspaceId} AND entity_kind = 'record' AND entity_id = ${recordId}::uuid
           AND deleted_at IS NULL`,
     );
     const row = rows[0];
 
     if (!row) {
-      throw notFound('Note', noteId);
+      throw notFound('Comment', commentId);
     }
 
     return row;
   };
 
-  const assertCanEdit = (ctx: EngineContext, row: NoteRow, verb: string) => {
+  const assertCanEdit = (ctx: EngineContext, row: RecordCommentRow, verb: string) => {
     if (!isAdmin(ctx) && !sameActor(parseJson<Actor>(row.author), ctx.actor)) {
-      throw new EngineError('FORBIDDEN', `Only the author or an admin can ${verb} a note`);
+      throw new EngineError('FORBIDDEN', `Only the author or an admin can ${verb} a comment`);
     }
   };
 
@@ -149,16 +160,16 @@ export const createNoteService = (deps: NoteServiceDeps): NoteService => {
       const object = await resolve(ctx, objectName);
       authorize(ctx, 'record.read', { object });
       assertUuid(id, 'record');
-      const after = query.cursor === undefined ? undefined : decodeNoteCursor(query.cursor);
+      const after = query.cursor === undefined ? undefined : decodeRecordCommentCursor(query.cursor);
 
       if (query.cursor !== undefined && after === undefined) {
-        throw new EngineError('INVALID_CURSOR', 'The notes cursor is malformed');
+        throw new EngineError('INVALID_CURSOR', 'The comments cursor is malformed');
       }
 
-      const limit = query.limit ?? NOTES_DEFAULT_LIMIT;
-      const rows = await runRaw<NoteRow>(
+      const limit = query.limit ?? RECORD_COMMENTS_DEFAULT_LIMIT;
+      const rows = await runRaw<RecordCommentRow>(
         db,
-        sql`SELECT ${NOTE_COLUMNS} FROM comment
+        sql`SELECT ${RECORD_COMMENT_COLUMNS} FROM comment
           WHERE workspace_id = ${ctx.workspaceId} AND entity_kind = 'record' AND object_id = ${object.id} AND entity_id = ${id}::uuid
             AND deleted_at IS NULL
             ${
@@ -179,8 +190,8 @@ export const createNoteService = (deps: NoteServiceDeps): NoteService => {
       const last = page.at(-1);
 
       return {
-        items: page.map((row) => toNote(object.nameSingular, row)),
-        nextCursor: rows.length > limit && last ? encodeNoteCursor(toIso(last.created_at), last.id) : null,
+        items: page.map((row) => toRecordComment(object.nameSingular, row)),
+        nextCursor: rows.length > limit && last ? encodeRecordCommentCursor(toIso(last.created_at), last.id) : null,
         total: toNumber(totals[0]?.total ?? 0),
       };
     },
@@ -188,19 +199,19 @@ export const createNoteService = (deps: NoteServiceDeps): NoteService => {
     create: async (ctx, objectName, id, input) => {
       const object = await resolve(ctx, objectName);
       authorize(ctx, 'record.read', { object });
-      // A note leaves the record untouched, so read-only objects take notes too.
+      // A comment leaves the record untouched, so read-only objects take comments too.
       authorize(ctx, 'record.write');
       assertUuid(id, 'record');
-      const parsed = NoteInputSchema.safeParse(input);
+      const parsed = RecordCommentInputSchema.safeParse(input);
 
       if (!parsed.success) {
-        throw fromZodError(parsed.error, 'Invalid note');
+        throw fromZodError(parsed.error, 'Invalid comment');
       }
 
-      const noteId = newId();
-      const { value, now } = await withNoteEvent(
+      const commentId = newId();
+      const { value, now } = await withRecordCommentEvent(
         ctx,
-        { type: 'note.created', objectId: object.id, objectName: object.nameSingular, recordId: id, noteId },
+        { type: 'comment.created', objectId: object.id, objectName: object.nameSingular, recordId: id, commentId },
         async (tx, at) => {
           const [record] = await dataSource.getMany(tx, ctx.workspaceId, object, [id]);
 
@@ -211,7 +222,7 @@ export const createNoteService = (deps: NoteServiceDeps): NoteService => {
           await runRaw(
             tx,
             sql`INSERT INTO comment (id, workspace_id, entity_kind, entity_id, object_id, actor, title, body, created_at)
-              VALUES (${noteId}::uuid, ${ctx.workspaceId}, 'record', ${id}::uuid, ${object.id}, ${JSON.stringify(ctx.actor)}::jsonb,
+              VALUES (${commentId}::uuid, ${ctx.workspaceId}, 'record', ${id}::uuid, ${object.id}, ${JSON.stringify(ctx.actor)}::jsonb,
                 ${parsed.data.title}, ${parsed.data.body ?? ''}, ${at.toISOString()}::timestamptz)`,
           );
 
@@ -221,7 +232,7 @@ export const createNoteService = (deps: NoteServiceDeps): NoteService => {
       void value;
 
       return {
-        id: noteId,
+        id: commentId,
         object: object.nameSingular,
         recordId: id,
         title: parsed.data.title,
@@ -232,54 +243,54 @@ export const createNoteService = (deps: NoteServiceDeps): NoteService => {
       };
     },
 
-    update: async (ctx, objectName, id, noteId, patch) => {
+    update: async (ctx, objectName, id, commentId, patch) => {
       const object = await resolve(ctx, objectName);
       authorize(ctx, 'record.read', { object });
       authorize(ctx, 'record.write');
       assertUuid(id, 'record');
-      assertUuid(noteId, 'note');
-      const parsed = NotePatchSchema.safeParse(patch);
+      assertUuid(commentId, 'comment');
+      const parsed = RecordCommentPatchSchema.safeParse(patch);
 
       if (!parsed.success) {
-        throw fromZodError(parsed.error, 'Invalid note');
+        throw fromZodError(parsed.error, 'Invalid comment');
       }
 
-      const { value } = await withNoteEvent(
+      const { value } = await withRecordCommentEvent(
         ctx,
-        { type: 'note.updated', objectId: object.id, objectName: object.nameSingular, recordId: id, noteId },
+        { type: 'comment.updated', objectId: object.id, objectName: object.nameSingular, recordId: id, commentId },
         async (tx, at) => {
-          const row = await loadNote(tx, ctx, id, noteId);
+          const row = await loadRecordComment(tx, ctx, id, commentId);
           assertCanEdit(ctx, row, 'edit');
           const title = parsed.data.title ?? row.title;
           const body = parsed.data.body ?? row.body;
           await runRaw(
             tx,
             sql`UPDATE comment SET title = ${title}, body = ${body}, edited_at = ${at.toISOString()}::timestamptz
-              WHERE id = ${noteId}::uuid`,
+              WHERE id = ${commentId}::uuid`,
           );
 
           return { ...row, title, body, updated_at: at.toISOString() };
         },
       );
 
-      return toNote(object.nameSingular, value);
+      return toRecordComment(object.nameSingular, value);
     },
 
-    delete: async (ctx, objectName, id, noteId) => {
+    delete: async (ctx, objectName, id, commentId) => {
       const object = await resolve(ctx, objectName);
       authorize(ctx, 'record.read', { object });
       authorize(ctx, 'record.write');
       assertUuid(id, 'record');
-      assertUuid(noteId, 'note');
-      await withNoteEvent(
+      assertUuid(commentId, 'comment');
+      await withRecordCommentEvent(
         ctx,
-        { type: 'note.deleted', objectId: object.id, objectName: object.nameSingular, recordId: id, noteId },
+        { type: 'comment.deleted', objectId: object.id, objectName: object.nameSingular, recordId: id, commentId },
         async (tx, at) => {
-          const row = await loadNote(tx, ctx, id, noteId);
+          const row = await loadRecordComment(tx, ctx, id, commentId);
           assertCanEdit(ctx, row, 'remove');
           await runRaw(
             tx,
-            sql`UPDATE comment SET deleted_at = ${at.toISOString()}::timestamptz WHERE id = ${noteId}::uuid`,
+            sql`UPDATE comment SET deleted_at = ${at.toISOString()}::timestamptz WHERE id = ${commentId}::uuid`,
           );
 
           return true;

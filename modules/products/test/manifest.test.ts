@@ -40,7 +40,7 @@ describe('products manifest', () => {
     const blocks = new Set([
       coreIds.blocks.fields,
       coreIds.blocks.title,
-      coreIds.blocks.notes,
+      coreIds.blocks.comments,
       coreIds.blocks.activity,
       ...manifest.blocks.map((block) => block.id),
     ]);

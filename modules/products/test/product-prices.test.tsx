@@ -50,7 +50,7 @@ describe('the product page', () => {
       'product_description',
       'product_prices',
       'product_images',
-      'notes',
+      'comments',
       'activity',
     ]);
     expect(screen.getByRole('complementary', { name: 'Product' })).toBeTruthy();

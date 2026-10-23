@@ -282,16 +282,16 @@ describe('overview block', () => {
     expect(listed).toEqual(
       expect.arrayContaining(['name', 'logo', 'domain', 'industry', 'employees', 'annual_revenue', 'owner', 'source']),
     );
-    // The header is the layout's own, so there is no Details tab to repeat them; notes have a tab of their own.
+    // The header is the layout's own, so there is no Details tab to repeat them; comments have a tab of their own.
     expect(layout?.header?.name).toBe('company_summary');
-    expect(layout?.tabs.map((tab) => tab.name)).toEqual(['overview', 'notes', 'activity', 'people', 'deals']);
+    expect(layout?.tabs.map((tab) => tab.name)).toEqual(['overview', 'comments', 'activity', 'people', 'deals']);
   });
 
   it('reads a deal as one page, not tabs: its stage, then the conversation, with its terms beside', () => {
     const layout = manifest.layouts.find((candidate) => candidate.label === 'Deal');
     expect(layout?.shell).toBe('split');
     const main = layout?.shell === 'split' ? layout.main.map((cell) => cell.blockId) : [];
-    expect(main).toEqual(['core.title', 'crm.deal_stage', 'core.notes', 'core.activity']);
+    expect(main).toEqual(['core.title', 'crm.deal_stage', 'core.comments', 'core.activity']);
     const aside = layout?.shell === 'split' ? layout.aside : [];
     const listed = aside.flatMap((cell) =>
       (cell.config as { fieldIds: string[] }).fieldIds.map((id) => id.split('.').pop() as string),

@@ -24,7 +24,7 @@ type LayoutLike = { shell: RecordShell } & { [K in LayoutContentKey]?: unknown }
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-/** A cell's name when none is written: the name its block ends with (`core.notes` is `notes`). */
+/** A cell's name when none is written: the name its block ends with (`core.comments` is `comments`). */
 export const defaultCellKey = (block: string): string => block.slice(block.lastIndexOf('.') + 1);
 
 const withKey = (cell: unknown): unknown =>

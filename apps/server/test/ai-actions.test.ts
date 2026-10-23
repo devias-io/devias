@@ -94,7 +94,7 @@ describe('agent tools from actions', () => {
         'update_object',
         'delete_view',
         'list_layouts',
-        'add_record_note',
+        'comment_on_record',
         'list_members',
         'invite_member',
         'list_api_keys',
@@ -108,7 +108,7 @@ describe('agent tools from actions', () => {
       tools: { name: string }[];
     };
     const memberNames = member.tools.map((tool) => tool.name);
-    expect(memberNames).toEqual(expect.arrayContaining(['list_members', 'add_record_note', 'list_records']));
+    expect(memberNames).toEqual(expect.arrayContaining(['list_members', 'comment_on_record', 'list_records']));
 
     for (const hidden of ['install_module', 'list_api_keys', 'invite_member', 'update_object']) {
       expect(memberNames).not.toContain(hidden);
@@ -173,7 +173,7 @@ describe('agent tools from actions', () => {
       {
         content: [
           toolUse(
-            'add_record_note',
+            'comment_on_record',
             { object: 'company', id: company.id, title: 'Call', body: 'Called them today.' },
             'tu_c',
           ),
@@ -181,7 +181,7 @@ describe('agent tools from actions', () => {
       },
       { content: [text('Done.')] },
     );
-    const { conversationId, events } = await send(alice.cookie, 'who is here, then note the call');
+    const { conversationId, events } = await send(alice.cookie, 'who is here, then comment on the call');
     const members = resultOf(events);
     expect(members?.status).toBe('executed');
     expect(JSON.stringify(members?.result)).toContain('alice@example.com');
@@ -189,10 +189,10 @@ describe('agent tools from actions', () => {
 
     const resolved = await approve(conversationId, events);
     expect(resultOf(resolved)).toMatchObject({ status: 'executed' });
-    const notes = (await api(`/api/workspaces/${ws.id}/records/company/${company.id}/notes`)).json as {
+    const comments = (await api(`/api/workspaces/${ws.id}/records/company/${company.id}/comments`)).json as {
       items: { title: string; body: string }[];
     };
-    expect(notes.items).toContainEqual(expect.objectContaining({ title: 'Call', body: 'Called them today.' }));
+    expect(comments.items).toContainEqual(expect.objectContaining({ title: 'Call', body: 'Called them today.' }));
   });
 
   it("gives a workspace the CRM's sales agent, with every tool it names, and nothing that reaches beyond records", async () => {
@@ -240,21 +240,21 @@ describe('agent tools from actions', () => {
     });
   });
 
-  it('lets a member remove a note their agent wrote, as their own', async () => {
+  it('lets a member remove a comment their agent wrote, as their own', async () => {
     const dana = await signUp(server, 'dana@example.com', 'Dana');
     await server.auth.api.addMember({ body: { userId: dana.userId, organizationId: ws.id, role: 'member' } });
     const company = (await api(`/api/workspaces/${ws.id}/records/company`, { body: { name: 'Hooli' } })).json as {
       id: string;
     };
     model.push(
-      { content: [toolUse('add_record_note', { object: 'company', id: company.id, title: 'Met them.' }, 'tu_dc')] },
-      { content: [text('Noted.')] },
+      { content: [toolUse('comment_on_record', { object: 'company', id: company.id, title: 'Met them.' }, 'tu_dc')] },
+      { content: [text('Done.')] },
     );
-    const { conversationId, events } = await send(dana.cookie, 'note the meeting');
+    const { conversationId, events } = await send(dana.cookie, 'comment on the meeting');
     const resolved = await approve(conversationId, events, dana.cookie);
-    const note = resultOf(resolved)?.result as { id: string };
+    const comment = resultOf(resolved)?.result as { id: string };
     const remove = await client(server, { cookie: dana.cookie })(
-      `/api/workspaces/${ws.id}/records/company/${company.id}/notes/${note.id}`,
+      `/api/workspaces/${ws.id}/records/company/${company.id}/comments/${comment.id}`,
       { method: 'DELETE' },
     );
     expect(remove.status).toBe(204);

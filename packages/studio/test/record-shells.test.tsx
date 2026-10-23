@@ -128,7 +128,7 @@ describe('the column shape', () => {
     open(columnLayout);
     await screen.findByLabelText('Title');
     expect(document.querySelector('[data-block="core.activity"]')).toBeNull();
-    expect(document.querySelector('[data-block="core.notes"]')).toBeNull();
+    expect(document.querySelector('[data-block="core.comments"]')).toBeNull();
     expect(document.querySelector('[data-block="core.mentioned_in"]')).toBeNull();
   });
 

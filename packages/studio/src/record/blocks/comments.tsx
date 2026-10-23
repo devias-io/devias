@@ -1,28 +1,33 @@
 import {
   coreIds,
   defineBlockComponent,
-  NOTE_BODY_MAX_LENGTH,
-  NOTE_TITLE_MAX_LENGTH,
-  type Note,
   personOf,
+  RECORD_COMMENT_BODY_MAX_LENGTH,
+  RECORD_COMMENT_TITLE_MAX_LENGTH,
+  type RecordComment,
 } from '@devias/core';
 import { Button, cn, Icon, Kbd, Skeleton, Textarea } from '@devias/ui';
 import { startOfDay } from 'date-fns';
 import { type FormEvent, type KeyboardEvent, useMemo, useRef, useState } from 'react';
 import { RichMarkdown } from '../../components/markdown';
-import { useAddNote, useDeleteNote, useNotes, useUpdateNote } from '../../hooks/use-notes';
+import {
+  useAddRecordComment,
+  useDeleteRecordComment,
+  useRecordComments,
+  useUpdateRecordComment,
+} from '../../hooks/use-record-comments';
 import { ago } from '../../lib/time';
 import { useWorkspace } from '../../providers/workspace';
 import { ActorName, dayLabel, fullDate, useActors } from '../activity/shared';
 
-/** Notes shown at first; "Show older notes" fetches the next ones. */
+/** Comments shown at first; "Show older comments" fetches the next ones. */
 const PAGE = 5;
 
 /** A body longer than this many lines (or characters) is folded behind "Show more". */
 const FOLD_LINES = 6;
 const FOLD_CHARS = 480;
 
-/** What goes in a note: its title, and a body that may be left empty. */
+/** What goes in a comment: its title, and a body that may be left empty. */
 interface Draft {
   title: string;
   body: string;
@@ -31,10 +36,10 @@ interface Draft {
 const isLong = (body: string): boolean => body.split('\n').length > FOLD_LINES || body.length > FOLD_CHARS;
 
 /**
- * The box notes are written and edited in. Closed it is one line, "Add a note…"; opened (by focus, by text, or
- * because a note is being edited) it has a Title, a body that takes Markdown, and Save (`⌘↵`).
+ * The box comments are written and edited in. Closed it is one line, "Add a comment…"; opened (by focus, by text, or
+ * because a comment is being edited) it has a Title, a body that takes Markdown, and Save (`⌘↵`).
  */
-function NoteBox({
+function RecordCommentBox({
   initial,
   autoFocus,
   pending,
@@ -80,7 +85,7 @@ function NoteBox({
   return (
     <form
       onSubmit={submit}
-      data-slot="note-box"
+      data-slot="comment-box"
       className={cn(
         'overflow-hidden rounded-lg bg-transparent ring-1 ring-input transition-shadow ring-inset focus-within:ring-ring dark:bg-input/30',
         !open && 'hover:ring-strong-border',
@@ -95,10 +100,10 @@ function NoteBox({
     >
       <input
         aria-label="Title"
-        placeholder={open ? 'Title' : 'Add a note…'}
+        placeholder={open ? 'Title' : 'Add a comment…'}
         value={title}
-        maxLength={NOTE_TITLE_MAX_LENGTH}
-        // biome-ignore lint/a11y/noAutofocus: a note opens for editing because the user asked to edit it
+        maxLength={RECORD_COMMENT_TITLE_MAX_LENGTH}
+        // biome-ignore lint/a11y/noAutofocus: a comment opens for editing because the user asked to edit it
         autoFocus={autoFocus}
         className={cn(
           'block w-full bg-transparent px-3 outline-none placeholder:text-muted-foreground',
@@ -119,11 +124,11 @@ function NoteBox({
         <>
           <Textarea
             ref={bodyRef}
-            aria-label="Note"
+            aria-label="Comment"
             placeholder="Write something…"
             value={body}
             rows={3}
-            maxLength={NOTE_BODY_MAX_LENGTH}
+            maxLength={RECORD_COMMENT_BODY_MAX_LENGTH}
             className="min-h-24 resize-none rounded-none border-0 bg-transparent px-3 py-1.5 shadow-none focus-visible:ring-0 dark:bg-transparent"
             onChange={(event) => setBody(event.target.value)}
             onKeyDown={keys}
@@ -156,40 +161,40 @@ function NoteBox({
   );
 }
 
-/** One note: who wrote it and when under its title, then its text; the author (or an admin) can edit and remove it. */
-function NoteItem({
-  note,
+/** One comment: who wrote it and when under its title, then its text; the author (or an admin) can edit and remove it. */
+function RecordCommentItem({
+  comment,
   object,
   recordId,
   canChange,
 }: {
-  note: Note;
+  comment: RecordComment;
   object: string;
   recordId: string;
   canChange: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const update = useUpdateNote(object, recordId);
-  const remove = useDeleteNote(object, recordId);
+  const update = useUpdateRecordComment(object, recordId);
+  const remove = useDeleteRecordComment(object, recordId);
   const actors = useActors();
-  const author = actors(note.author);
-  const created = new Date(note.createdAt);
-  const edited = new Date(note.updatedAt).getTime() - created.getTime() > 1000;
-  const long = isLong(note.body);
+  const author = actors(comment.author);
+  const created = new Date(comment.createdAt);
+  const edited = new Date(comment.updatedAt).getTime() - created.getTime() > 1000;
+  const long = isLong(comment.body);
 
   if (editing) {
     return (
-      <li data-slot="note">
+      <li data-slot="comment">
         <div className="min-w-0 flex-1">
-          <NoteBox
-            initial={{ title: note.title, body: note.body }}
+          <RecordCommentBox
+            initial={{ title: comment.title, body: comment.body }}
             autoFocus
             pending={update.isPending}
             onCancel={() => setEditing(false)}
             onSubmit={(draft) =>
               update.mutate(
-                { noteId: note.id, patch: { title: draft.title, body: draft.body } },
+                { commentId: comment.id, patch: { title: draft.title, body: draft.body } },
                 { onSuccess: () => setEditing(false) },
               )
             }
@@ -200,21 +205,21 @@ function NoteItem({
   }
 
   return (
-    <li className="group/note" data-slot="note">
+    <li className="group/comment" data-slot="comment">
       <div className="min-w-0">
         <div className="flex items-start justify-between gap-3">
-          <span className="min-w-0 pt-0.5 text-[14px] font-semibold break-words">{note.title}</span>
+          <span className="min-w-0 pt-0.5 text-[14px] font-semibold break-words">{comment.title}</span>
           {canChange ? (
-            <span className="-mt-0.5 -mr-1 flex opacity-0 transition-opacity group-hover/note:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100">
-              <Button variant="ghost" size="icon-sm" aria-label="Edit note" onClick={() => setEditing(true)}>
+            <span className="-mt-0.5 -mr-1 flex opacity-0 transition-opacity group-hover/comment:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100">
+              <Button variant="ghost" size="icon-sm" aria-label="Edit comment" onClick={() => setEditing(true)}>
                 <Icon name="pencil" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Delete note"
+                aria-label="Delete comment"
                 disabled={remove.isPending}
-                onClick={() => remove.mutate(note.id)}
+                onClick={() => remove.mutate(comment.id)}
               >
                 <Icon name="trash-2" />
               </Button>
@@ -225,13 +230,13 @@ function NoteItem({
           <ActorName person={author} className="font-medium text-foreground" />
           <span className="text-[12px]">
             {' · '}
-            <time dateTime={note.createdAt} title={ago(created)} className="tabular-nums">
+            <time dateTime={comment.createdAt} title={ago(created)} className="tabular-nums">
               {fullDate(created)}
             </time>
             {edited ? ' · edited' : ''}
           </span>
         </p>
-        {note.body ? (
+        {comment.body ? (
           <div
             className={cn(
               'mt-2 max-w-3xl',
@@ -240,7 +245,7 @@ function NoteItem({
                 'max-h-36 overflow-hidden [mask-image:linear-gradient(to_bottom,black_65%,transparent)]',
             )}
           >
-            <RichMarkdown text={note.body} />
+            <RichMarkdown text={comment.body} />
           </div>
         ) : null}
         {long ? (
@@ -258,36 +263,36 @@ function NoteItem({
   );
 }
 
-function Notes({ object, label, recordId }: { object: string; label: string; recordId: string }) {
+function RecordComments({ object, label, recordId }: { object: string; label: string; recordId: string }) {
   const { user, isAdmin } = useWorkspace();
-  const notes = useNotes(object, recordId, PAGE);
-  const add = useAddNote(object, recordId);
-  const items = notes.data?.pages.flatMap((page) => page.items) ?? [];
+  const comments = useRecordComments(object, recordId, PAGE);
+  const add = useAddRecordComment(object, recordId);
+  const items = comments.data?.pages.flatMap((page) => page.items) ?? [];
   const days = useMemo(() => {
-    const groups: { key: number; label: string; notes: Note[] }[] = [];
+    const groups: { key: number; label: string; comments: RecordComment[] }[] = [];
 
-    for (const note of notes.data?.pages.flatMap((page) => page.items) ?? []) {
-      const date = new Date(note.createdAt);
+    for (const comment of comments.data?.pages.flatMap((page) => page.items) ?? []) {
+      const date = new Date(comment.createdAt);
       const key = startOfDay(date).getTime();
       const group = groups.at(-1);
 
       if (group?.key === key) {
-        group.notes.push(note);
+        group.comments.push(comment);
       } else {
-        groups.push({ key, label: dayLabel(date), notes: [note] });
+        groups.push({ key, label: dayLabel(date), comments: [comment] });
       }
     }
 
     return groups;
-  }, [notes.data]);
+  }, [comments.data]);
 
   return (
-    <div className="flex flex-col gap-6" data-slot="notes">
-      <NoteBox
+    <div className="flex flex-col gap-6" data-slot="comments">
+      <RecordCommentBox
         pending={add.isPending}
         onSubmit={(draft) => add.mutate({ title: draft.title, ...(draft.body ? { body: draft.body } : {}) })}
       />
-      {notes.isPending ? (
+      {comments.isPending ? (
         <div className="flex flex-col gap-3 pl-10">
           <Skeleton className="h-4 w-1/3" />
           <Skeleton className="h-4 w-2/3" />
@@ -295,7 +300,7 @@ function Notes({ object, label, recordId }: { object: string; label: string; rec
         </div>
       ) : items.length === 0 ? (
         <p className="text-xs text-muted-foreground">
-          No notes yet. Write down what you learn about this {label}: calls, decisions, context.
+          No comments yet. Write down what you learn about this {label}: calls, decisions, context.
         </p>
       ) : (
         <div className="flex flex-col gap-7">
@@ -304,14 +309,14 @@ function Notes({ object, label, recordId }: { object: string; label: string; rec
               <h3 className="mb-4 flex items-center gap-3 text-[11px] font-medium tracking-wider text-muted-foreground uppercase after:h-px after:flex-1 after:bg-border">
                 {day.label}
               </h3>
-              <ul className="flex flex-col gap-5" aria-label={`Notes, ${day.label}`}>
-                {day.notes.map((note) => (
-                  <NoteItem
-                    key={note.id}
-                    note={note}
+              <ul className="flex flex-col gap-5" aria-label={`Comments, ${day.label}`}>
+                {day.comments.map((comment) => (
+                  <RecordCommentItem
+                    key={comment.id}
+                    comment={comment}
                     object={object}
                     recordId={recordId}
-                    canChange={isAdmin || personOf(note.author) === user.id}
+                    canChange={isAdmin || personOf(comment.author) === user.id}
                   />
                 ))}
               </ul>
@@ -319,15 +324,15 @@ function Notes({ object, label, recordId }: { object: string; label: string; rec
           ))}
         </div>
       )}
-      {notes.hasNextPage ? (
+      {comments.hasNextPage ? (
         <div className="pl-10">
           <Button
             variant="outline"
             size="sm"
-            disabled={notes.isFetchingNextPage}
-            onClick={() => void notes.fetchNextPage()}
+            disabled={comments.isFetchingNextPage}
+            onClick={() => void comments.fetchNextPage()}
           >
-            Show older notes
+            Show older comments
           </Button>
         </div>
       ) : null}
@@ -336,17 +341,17 @@ function Notes({ object, label, recordId }: { object: string; label: string; rec
 }
 
 /**
- * A record's notes, newest first, for the end of the left column of every record page: a box to jot one down (a title
- * and a Markdown body), then the notes under day headings as the activity is, each saying who wrote it and when, and
+ * A record's comments, newest first, for the end of the left column of every record page: a box to jot one down (a title
+ * and a Markdown body), then the comments under day headings as the activity is, each saying who wrote it and when, and
  * editable and removable by its author.
  */
-export const notesBlock = defineBlockComponent({
-  id: coreIds.blocks.notes,
-  label: 'Notes',
-  icon: 'sticky-note',
+export const commentsBlock = defineBlockComponent({
+  id: coreIds.blocks.comments,
+  label: 'Comments',
+  icon: 'message-square',
   surfaces: { record: { placement: 'tab' } },
   component: ({ record, object }) =>
     record ? (
-      <Notes object={object.nameSingular} label={object.labelSingular.toLowerCase()} recordId={record.id} />
+      <RecordComments object={object.nameSingular} label={object.labelSingular.toLowerCase()} recordId={record.id} />
     ) : null,
 });

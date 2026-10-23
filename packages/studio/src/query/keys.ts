@@ -13,8 +13,8 @@ export const keys = {
   count: (ws: string, object: string) => ['workspace', ws, 'records', object, 'count'] as const,
   /** Under the object's records, so anything that refreshes a record's data refreshes its activity too. */
   activity: (ws: string, object: string, id: string) => ['workspace', ws, 'records', object, 'activity', id] as const,
-  /** Under the object's records too: deleting a record refreshes its notes. */
-  notes: (ws: string, object: string, id: string) => ['workspace', ws, 'records', object, 'notes', id] as const,
+  /** Under the object's records too: deleting a record refreshes its comments. */
+  comments: (ws: string, object: string, id: string) => ['workspace', ws, 'records', object, 'comments', id] as const,
   labels: (ws: string, object: string, ids: readonly string[] = []) =>
     ['workspace', ws, 'labels', object, ids] as const,
   documents: (ws: string) => ['workspace', ws, 'documents'] as const,

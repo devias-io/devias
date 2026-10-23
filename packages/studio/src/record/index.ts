@@ -1,8 +1,8 @@
 export { ActivityEntries, ActivityTimeline } from './activity/activity-timeline';
 export { activityBlock } from './blocks/activity';
+export { commentsBlock } from './blocks/comments';
 export { fieldsBlock } from './blocks/fields';
 export { MentionedInList, MentionedInSection, type MentionTarget, mentionedInBlock } from './blocks/mentioned-in';
-export { notesBlock } from './blocks/notes';
 export { relatedRecordsBlock } from './blocks/related-records';
 export { richTextBlock } from './blocks/rich-text';
 export { titleBlock } from './blocks/title';

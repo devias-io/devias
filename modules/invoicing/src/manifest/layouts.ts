@@ -29,8 +29,8 @@ export const layouts = [
           { blockId: ids.blocks.invoice_details, column: 9, columnSpan: 4 },
         ],
       },
-      // The notes, in a tab of their own: alone in it, the block needs no heading.
-      { name: 'notes', label: 'Notes', blocks: [{ blockId: coreIds.blocks.notes }] },
+      // The comments, in a tab of their own: alone in it, the block needs no heading.
+      { name: 'comments', label: 'Comments', blocks: [{ blockId: coreIds.blocks.comments }] },
     ],
   }),
 ];

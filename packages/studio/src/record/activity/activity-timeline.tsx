@@ -507,7 +507,7 @@ export function ActivityEntries({
 
 /**
  * A record's activity: what happened to the record, newest first and grouped by day. Changes show their values the way
- * the field displays them. Writing about a record is for its notes.
+ * the field displays them. Writing about a record is for its comments.
  */
 export function ActivityTimeline({ object, record }: { object: ObjectMetadata; record: RecordData }) {
   const activity = useActivity(object.nameSingular, record.id);

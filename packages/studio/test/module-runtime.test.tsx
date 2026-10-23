@@ -672,7 +672,7 @@ describe('action steps in the workflow editor', () => {
     fireEvent.pointerDown(picker, { pointerType: 'mouse', button: 0 });
     fireEvent.mouseDown(picker, { button: 0 });
     fireEvent.click(picker);
-    expect(await screen.findByRole('option', { name: 'Add a note to a record' })).toBeTruthy();
+    expect(await screen.findByRole('option', { name: 'Add a comment to a record' })).toBeTruthy();
     const option = await screen.findByRole('option', { name: 'Send an email · Mailer' });
     fireEvent.pointerDown(option, { pointerType: 'mouse', button: 0 });
     fireEvent.mouseDown(option, { button: 0 });

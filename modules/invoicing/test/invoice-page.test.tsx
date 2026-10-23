@@ -51,8 +51,8 @@ describe('invoice page', () => {
     const { client, invoice, container } = await setup({ status: 'sent', due_date: '2020-01-01' });
     await client.records.create('payment', { invoice: invoice.id, amount: 100, paid_on: '2026-01-02', method: 'card' });
     await waitFor(() => expect(container.querySelector('[data-slot="paid-bar"]')).toBeTruthy());
-    // Two tabs: the page, then the notes (what the layout does not list is not added).
-    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual(['Overview', 'Notes']);
+    // Two tabs: the page, then the comments (what the layout does not list is not added).
+    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual(['Overview', 'Comments']);
     // The header: the page's breadcrumbs, then the block with the number, its status and what the status allows.
     const page = container.querySelector('[data-slot="record-header"]') as HTMLElement;
     expect(page.textContent).toContain('Invoices');

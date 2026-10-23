@@ -64,7 +64,7 @@ describe('inventory blocks', () => {
       'products.product_prices',
       'inventory.product_stock',
       'products.product_images',
-      'core.notes',
+      'core.comments',
       'core.activity',
     ]);
     expect(block.getByText(/74[.,]5 m/)).toBeTruthy();

@@ -138,7 +138,7 @@ export const createNotificationService = (deps: NotificationServiceDeps): Notifi
 
   /**
    * One write transaction under the workspace lock: mutate, then announce one `notification.changed` per change on
-   * the feed, as notes do. Nothing is announced when nothing changed.
+   * the feed, as record comments do. Nothing is announced when nothing changed.
    */
   const commit = async <T>(
     ctx: EngineContext,

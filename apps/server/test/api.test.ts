@@ -166,8 +166,8 @@ describe('API on PGlite', () => {
     const created = await api(`${base}/records/company`, { body: { name: 'Initech' } });
     const id = (created.json as { id: string }).id;
     await api(`${base}/records/company/${id}`, { method: 'PATCH', body: { employees: 12 } });
-    // A note is not activity: it has its own list.
-    await api(`${base}/records/company/${id}/notes`, { body: { title: 'Met them at the expo' } });
+    // A comment is not activity: it has its own list.
+    await api(`${base}/records/company/${id}/comments`, { body: { title: 'Met them at the expo' } });
     const page = await api(`${base}/records/company/${id}/activity?limit=10`);
     expect(page.status).toBe(200);
     const items = (page.json as { items: { kind: string; changes?: unknown[] }[] }).items;
@@ -176,39 +176,39 @@ describe('API on PGlite', () => {
     expect((await api(`${base}/records/company/${id}/activity?cursor=x`)).status).toBe(400);
   });
 
-  it("keeps a record's notes: written, edited, listed newest first and removed", async () => {
+  it("keeps a record's comments: written, edited, listed newest first and removed", async () => {
     const created = await api(`${base}/records/company`, { body: { name: 'Hooli' } });
     const id = (created.json as { id: string }).id;
-    const first = await api(`${base}/records/company/${id}/notes`, {
+    const first = await api(`${base}/records/company/${id}/comments`, {
       body: { title: 'Gate code', body: '4512, ring twice' },
     });
     expect(first.status).toBe(201);
-    const noteId = (first.json as { id: string }).id;
-    await api(`${base}/records/company/${id}/notes`, { body: { title: 'Wants a heat pump' } });
-    expect((await api(`${base}/records/company/${id}/notes`, { body: { title: '  ' } })).status).toBe(400);
+    const commentId = (first.json as { id: string }).id;
+    await api(`${base}/records/company/${id}/comments`, { body: { title: 'Wants a heat pump' } });
+    expect((await api(`${base}/records/company/${id}/comments`, { body: { title: '  ' } })).status).toBe(400);
 
-    const page = await api(`${base}/records/company/${id}/notes?limit=10`);
+    const page = await api(`${base}/records/company/${id}/comments?limit=10`);
     expect(page.status).toBe(200);
     const { items, total } = page.json as { items: { title: string; author: { kind: string } }[]; total: number };
     expect(items.map((item) => item.title)).toEqual(['Wants a heat pump', 'Gate code']);
     expect(total).toBe(2);
     expect(items[0]?.author.kind).toBe('user');
 
-    const edited = await api(`${base}/records/company/${id}/notes/${noteId}`, {
+    const edited = await api(`${base}/records/company/${id}/comments/${commentId}`, {
       method: 'PATCH',
       body: { body: 'changed to 9921' },
     });
     expect(edited.status).toBe(200);
     expect(edited.json).toMatchObject({ title: 'Gate code', body: 'changed to 9921' });
-    expect((await api(`${base}/records/company/${id}/notes?cursor=x`)).status).toBe(400);
+    expect((await api(`${base}/records/company/${id}/comments?cursor=x`)).status).toBe(400);
 
-    // Notes are not activity or records: the timeline stays as it was.
+    // Comments are not activity or records: the timeline stays as it was.
     const activity = await api(`${base}/records/company/${id}/activity`);
     expect((activity.json as { items: { kind: string }[] }).items.map((item) => item.kind)).toEqual(['created']);
 
-    const removed = await api(`${base}/records/company/${id}/notes/${noteId}`, { method: 'DELETE' });
+    const removed = await api(`${base}/records/company/${id}/comments/${commentId}`, { method: 'DELETE' });
     expect(removed.status).toBe(204);
-    const after = await api(`${base}/records/company/${id}/notes`);
+    const after = await api(`${base}/records/company/${id}/comments`);
     expect((after.json as { total: number }).total).toBe(1);
   });
 

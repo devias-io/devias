@@ -27,7 +27,7 @@ import {
 import { toolNameOfId } from './module-action';
 import { moduleActions } from './modules';
 import { notificationActions } from './notifications';
-import { activityActions, noteActions, recordActions } from './records';
+import { activityActions, recordActions, recordCommentActions } from './records';
 import { taskActions } from './tasks';
 import { workflowActions } from './workflows';
 import { aiAgentActions, aiSettingsActions, aiSkillActions, apiKeyActions, memberActions } from './workspace';
@@ -45,7 +45,7 @@ export const ACTIONS = [
   ...Object.values(commandItemActions),
   ...Object.values(recordActions),
   ...Object.values(activityActions),
-  ...Object.values(noteActions),
+  ...Object.values(recordCommentActions),
   ...Object.values(documentActions),
   ...Object.values(taskActions),
   ...Object.values(workflowActions),

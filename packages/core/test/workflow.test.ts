@@ -325,7 +325,7 @@ describe('action steps', () => {
 
   it('lets workflows run what their own permissions allow, never people-only or managing actions', () => {
     expect(workflowCanRun(spec('core.update_record'))).toBe(true);
-    expect(workflowCanRun(spec('core.add_record_note'))).toBe(true);
+    expect(workflowCanRun(spec('core.comment_on_record'))).toBe(true);
     expect(workflowCanRun(spec('core.aggregate_records'))).toBe(true);
     expect(workflowCanRun(spec('core.change_member_role'))).toBe(false);
     expect(workflowCanRun(spec('core.run_workflow'))).toBe(false);

@@ -8,7 +8,7 @@ import { useSchema } from '../../providers/schema';
 import { useWorkspace } from '../../providers/workspace';
 import { initials } from '../../shell/user-menu';
 
-/** What the activity and notes of a record share: who did something, how a day and a moment are written. */
+/** What the activity and comments of a record share: who did something, how a day and a moment are written. */
 
 /** What a hover card says about someone who acted: a member, a workspace agent, or a module's code. */
 export interface ActorCard {
@@ -151,7 +151,7 @@ export function PersonAvatar({ person }: { person: Person }) {
   );
 }
 
-/** The marker on the rail: an avatar for comments and notes, a small icon for changes. */
+/** The marker on the rail: an avatar for comments, a small icon for changes. */
 export function Marker({ children }: { children: ReactNode }) {
   return <div className="flex size-7 shrink-0 items-center justify-center text-muted-foreground">{children}</div>;
 }

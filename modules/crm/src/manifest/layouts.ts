@@ -8,11 +8,11 @@ const activityTab = {
   blocks: [{ blockId: coreIds.blocks.activity }],
 };
 
-/** The record's notes, in a tab of their own. Alone in its tab, a block needs no heading. */
-const notesTab = {
-  name: 'notes',
-  label: 'Notes',
-  blocks: [{ blockId: coreIds.blocks.notes }],
+/** The record's comments, in a tab of their own. Alone in its tab, a block needs no heading. */
+const commentsTab = {
+  name: 'comments',
+  label: 'Comments',
+  blocks: [{ blockId: coreIds.blocks.comments }],
 };
 
 /** A tab listing the records of an object whose relation field points at this one. */
@@ -104,7 +104,7 @@ const companyOverviewTab = {
 
 /**
  * Record layouts for people, companies and deals: a header that says who or what the record is, then an overview,
- * the notes, the activity and the related records, a tab each (a deal is one page, read top to bottom).
+ * the comments, the activity and the related records, a tab each (a deal is one page, read top to bottom).
  */
 export const layouts = [
   defineLayout({
@@ -117,7 +117,7 @@ export const layouts = [
     header: { blockId: ids.blocks.person_summary },
     tabs: [
       personOverviewTab,
-      notesTab,
+      commentsTab,
       activityTab,
       relatedTab('deals', 'Deals', ids.objects.deal, ids.fields.deal.point_of_contact),
     ],
@@ -132,7 +132,7 @@ export const layouts = [
     header: { blockId: ids.blocks.company_summary },
     tabs: [
       companyOverviewTab,
-      notesTab,
+      commentsTab,
       activityTab,
       relatedTab('people', 'People', ids.objects.person, ids.fields.person.company),
       relatedTab('deals', 'Deals', ids.objects.deal, ids.fields.deal.company),
@@ -149,7 +149,7 @@ export const layouts = [
     main: [
       { blockId: coreIds.blocks.title, label: 'Name', config: { fieldId: ids.fields.deal.name } },
       { blockId: ids.blocks.deal_stage, label: 'Stage' },
-      { blockId: coreIds.blocks.notes, label: 'Notes' },
+      { blockId: coreIds.blocks.comments, label: 'Comments' },
       { blockId: coreIds.blocks.activity, label: 'Activity' },
     ],
     aside: [

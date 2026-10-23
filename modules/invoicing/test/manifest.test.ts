@@ -50,7 +50,7 @@ describe('invoicing manifest', () => {
       coreIds.blocks.fields,
       coreIds.blocks.related_records,
       coreIds.blocks.activity,
-      coreIds.blocks.notes,
+      coreIds.blocks.comments,
       ...manifest.blocks.map((b) => b.id),
     ]);
     const fieldIdsOf = new Map(manifest.objects.map((object) => [object.id, object.fields.map((f) => f.id)]));

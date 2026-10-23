@@ -69,7 +69,7 @@ const library = () =>
         objectId: 'library.book',
         label: 'Book',
         shell: 'column',
-        blocks: [{ blockId: 'library.book_card' }, { blockId: 'core.notes' }],
+        blocks: [{ blockId: 'library.book_card' }, { blockId: 'core.comments' }],
         actions: [{ actionId: 'library.check_out' }],
       }),
     ],

@@ -21,13 +21,13 @@ import {
   type MetadataCrud,
   type ModuleEventQuery,
   type ModuleManifest,
-  type NoteInput,
-  type NotePatch,
-  type NoteQuery,
   type NotificationInput,
   type NotificationQuery,
   type Page,
   type Query,
+  type RecordCommentInput,
+  type RecordCommentPatch,
+  type RecordCommentQuery,
   type RecordData,
   type RunWorkflowInput,
   type SubscribeOptions,
@@ -75,7 +75,6 @@ import {
   updateConnection,
   updateModuleVariables,
 } from './module-connections';
-import { createNote, deleteNote, listNotes, updateNote } from './notes';
 import {
   countUnreadNotifications,
   deleteNotification,
@@ -86,6 +85,7 @@ import {
   sendNotification,
 } from './notifications';
 import { applyManifest, planManifest, uninstallModule } from './reconcile';
+import { createRecordComment, deleteRecordComment, listRecordComments, updateRecordComment } from './record-comments';
 import {
   aggregateMockRecords,
   createRecord,
@@ -370,12 +370,15 @@ export const createMockClient = (options: MockClientOptions): MockClient => {
     activity: {
       list: (object: string, id: string, query?: ActivityQuery) => run(() => listActivity(store, object, id, query)),
     },
-    notes: {
-      list: (object: string, id: string, query?: NoteQuery) => run(() => listNotes(store, object, id, query)),
-      create: (object: string, id: string, input: NoteInput) => run(() => createNote(store, object, id, input)),
-      update: (object: string, id: string, noteId: string, patch: NotePatch) =>
-        run(() => updateNote(store, object, id, noteId, patch)),
-      delete: (object: string, id: string, noteId: string) => run(() => deleteNote(store, object, id, noteId)),
+    comments: {
+      list: (object: string, id: string, query?: RecordCommentQuery) =>
+        run(() => listRecordComments(store, object, id, query)),
+      create: (object: string, id: string, input: RecordCommentInput) =>
+        run(() => createRecordComment(store, object, id, input)),
+      update: (object: string, id: string, commentId: string, patch: RecordCommentPatch) =>
+        run(() => updateRecordComment(store, object, id, commentId, patch)),
+      delete: (object: string, id: string, commentId: string) =>
+        run(() => deleteRecordComment(store, object, id, commentId)),
     },
     documents: {
       list: (query?: DocumentQuery) => run(() => listDocuments(store, query)),

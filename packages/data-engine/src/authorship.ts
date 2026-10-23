@@ -3,7 +3,7 @@ import type { EngineContext } from './context';
 
 /** Who may change what someone wrote: its author and admins. */
 
-/** The same author: the same actor, or the same person behind it (a note the agent wrote for them is theirs). */
+/** The same author: the same actor, or the same person behind it (a comment the agent wrote for them is theirs). */
 export const sameActor = (a: Actor, b: Actor): boolean => {
   const person = personOf(a);
 

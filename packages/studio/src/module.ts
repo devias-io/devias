@@ -22,10 +22,10 @@ import { skillsPages } from './pages/skills';
 import { tasksPages } from './pages/tasks';
 import { workflowsPages } from './pages/workflows';
 import { activityBlock } from './record/blocks/activity';
+import { commentApprovalBlock } from './record/blocks/comment-approval';
+import { commentsBlock } from './record/blocks/comments';
 import { fieldsBlock } from './record/blocks/fields';
 import { mentionedInBlock } from './record/blocks/mentioned-in';
-import { noteApprovalBlock } from './record/blocks/note-approval';
-import { notesBlock } from './record/blocks/notes';
 import { relatedRecordsBlock } from './record/blocks/related-records';
 import { richTextBlock } from './record/blocks/rich-text';
 import { tasksBlock } from './record/blocks/tasks';
@@ -50,7 +50,7 @@ export const studio = defineModuleStudio(manifest, {
     fieldsBlock,
     relatedRecordsBlock,
     activityBlock,
-    notesBlock,
+    commentsBlock,
     tasksBlock,
     mentionedInBlock,
     titleBlock,
@@ -64,7 +64,7 @@ export const studio = defineModuleStudio(manifest, {
     agentPanelBlock,
     askAgentBlock,
     agentApprovalBlock,
-    noteApprovalBlock,
+    commentApprovalBlock,
   ],
   pages: [
     homePage,

@@ -1,8 +1,8 @@
-import { activityActions as activity, noteActions as notes, recordActions as records } from '@devias/core';
+import { activityActions as activity, recordCommentActions as comments, recordActions as records } from '@devias/core';
 import { EngineError } from '../errors';
 import { type Action, type EngineActionDeps, implement } from './types';
 
-/** Records (query, CRUD, batch, search) and a record's activity and notes. */
+/** Records (query, CRUD, batch, search) and a record's activity and comments. */
 export const recordActions = ({ engine }: EngineActionDeps): Action[] => [
   implement(records.list, ({ object, ...query }, ctx) => engine.records.list(ctx, { ...query, object })),
   implement(records.aggregate, ({ object, ...query }, ctx) => engine.records.aggregate(ctx, { ...query, object })),
@@ -41,10 +41,10 @@ export const recordActions = ({ engine }: EngineActionDeps): Action[] => [
   implement(records.import, ({ object, ...body }, ctx) => engine.records.import(ctx, object, body)),
   implement(records.lookup, (input, ctx) => engine.records.lookup(ctx, input)),
   implement(activity.list, ({ object, id, ...query }, ctx) => engine.activity.list(ctx, object, id, query)),
-  implement(notes.list, ({ object, id, ...query }, ctx) => engine.notes.list(ctx, object, id, query)),
-  implement(notes.create, ({ object, id, ...input }, ctx) => engine.notes.create(ctx, object, id, input)),
-  implement(notes.update, ({ object, id, noteId, ...patch }, ctx) =>
-    engine.notes.update(ctx, object, id, noteId, patch),
+  implement(comments.list, ({ object, id, ...query }, ctx) => engine.comments.list(ctx, object, id, query)),
+  implement(comments.create, ({ object, id, ...input }, ctx) => engine.comments.create(ctx, object, id, input)),
+  implement(comments.update, ({ object, id, commentId, ...patch }, ctx) =>
+    engine.comments.update(ctx, object, id, commentId, patch),
   ),
-  implement(notes.delete, ({ object, id, noteId }, ctx) => engine.notes.delete(ctx, object, id, noteId)),
+  implement(comments.delete, ({ object, id, commentId }, ctx) => engine.comments.delete(ctx, object, id, commentId)),
 ];

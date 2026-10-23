@@ -2,9 +2,15 @@ import { z } from 'zod';
 import { ActivityPageSchema, ActivityQuerySchema } from '../activity';
 import { coreIds } from '../core-ids';
 import { LookupHitSchema, LookupInputSchema, RecordWriteSchema } from '../metadata/inputs';
-import { NoteInputSchema, NotePageSchema, NotePatchSchema, NoteQuerySchema, NoteSchema } from '../notes';
 import { AggregateQuerySchema, AggregateResultSchema } from '../query/aggregate';
 import { PageSchema, QuerySchema, RecordDataSchema } from '../query/ir';
+import {
+  RecordCommentInputSchema,
+  RecordCommentPageSchema,
+  RecordCommentPatchSchema,
+  RecordCommentQuerySchema,
+  RecordCommentSchema,
+} from '../record-comments';
 import { defineActionSpec } from './define';
 
 /** The most creates, updates and deletes one batch (or one bulk delete) may carry. */
@@ -389,77 +395,77 @@ export const activityActions = {
   }),
 };
 
-export const noteActions = {
+export const recordCommentActions = {
   list: defineActionSpec({
-    id: coreIds.actions.list_record_notes,
+    id: coreIds.actions.list_record_comments,
     ai: {
-      tool: 'list_record_notes',
+      tool: 'list_record_comments',
       description:
-        "A record's notes, newest first, with their titles, bodies, authors and dates. Page with nextCursor.",
+        "A record's comments, newest first, with their titles, bodies, authors and dates. Page with nextCursor.",
     },
-    summary: "List a record's notes",
+    summary: "List a record's comments",
     description: 'Newest first. Page with `nextCursor`; `total` is how many the record has.',
-    tags: ['notes'],
+    tags: ['comments'],
     permission: 'record.read',
     params: RecordParams,
-    query: NoteQuerySchema,
-    output: NotePageSchema,
+    query: RecordCommentQuerySchema,
+    output: RecordCommentPageSchema,
     http: {
       method: 'get',
-      path: '/api/workspaces/{workspaceId}/records/{object}/{id}/notes',
+      path: '/api/workspaces/{workspaceId}/records/{object}/{id}/comments',
       errors: [400, 401, 403, 404, 409],
-      outputDescription: 'A page of notes',
+      outputDescription: 'A page of comments',
     },
   }),
   create: defineActionSpec({
-    id: coreIds.actions.add_record_note,
+    id: coreIds.actions.comment_on_record,
     ai: {
-      tool: 'add_record_note',
+      tool: 'comment_on_record',
       description:
-        'Write a note on a record: a short title and an optional body, as the person you act for. Use it for what should be remembered about the record. Asks for approval.',
+        'Write a comment on a record: a short title and an optional body, as the person you act for. Use it for what should be remembered about the record. Asks for approval.',
     },
-    summary: 'Add a note to a record',
-    tags: ['notes'],
+    summary: 'Add a comment to a record',
+    tags: ['comments'],
     permission: 'record.write',
     params: RecordParams,
-    body: NoteInputSchema,
-    output: NoteSchema,
+    body: RecordCommentInputSchema,
+    output: RecordCommentSchema,
     http: {
       method: 'post',
-      path: '/api/workspaces/{workspaceId}/records/{object}/{id}/notes',
+      path: '/api/workspaces/{workspaceId}/records/{object}/{id}/comments',
       status: 201,
-      bodyDescription: 'The note: a title and an optional body',
-      outputDescription: 'The note',
+      bodyDescription: 'The comment: a title and an optional body',
+      outputDescription: 'The comment',
     },
   }),
   update: defineActionSpec({
-    id: coreIds.actions.update_record_note,
-    ai: { tool: 'update_record_note', description: "Change a note's title or body. Asks for approval." },
-    summary: 'Edit a note',
-    description: 'Authors can edit their own notes; owners and admins any.',
-    tags: ['notes'],
+    id: coreIds.actions.update_record_comment,
+    ai: { tool: 'update_record_comment', description: "Change a comment's title or body. Asks for approval." },
+    summary: 'Edit a comment',
+    description: 'Authors can edit their own comments; owners and admins any.',
+    tags: ['comments'],
     permission: 'record.write',
-    params: RecordParams.extend({ noteId: z.string() }),
-    body: NotePatchSchema,
-    output: NoteSchema,
+    params: RecordParams.extend({ commentId: z.string() }),
+    body: RecordCommentPatchSchema,
+    output: RecordCommentSchema,
     http: {
       method: 'patch',
-      path: '/api/workspaces/{workspaceId}/records/{object}/{id}/notes/{noteId}',
+      path: '/api/workspaces/{workspaceId}/records/{object}/{id}/comments/{commentId}',
       bodyDescription: 'The title and/or the body to change',
-      outputDescription: 'The note',
+      outputDescription: 'The comment',
     },
   }),
   delete: defineActionSpec({
-    id: coreIds.actions.delete_record_note,
-    ai: { tool: 'delete_record_note' },
-    summary: 'Remove a note',
-    description: 'Authors can remove their own notes; owners and admins any.',
-    tags: ['notes'],
+    id: coreIds.actions.delete_record_comment,
+    ai: { tool: 'delete_record_comment' },
+    summary: 'Remove a comment',
+    description: 'Authors can remove their own comments; owners and admins any.',
+    tags: ['comments'],
     permission: 'record.write',
-    params: RecordParams.extend({ noteId: z.string() }),
+    params: RecordParams.extend({ commentId: z.string() }),
     http: {
       method: 'delete',
-      path: '/api/workspaces/{workspaceId}/records/{object}/{id}/notes/{noteId}',
+      path: '/api/workspaces/{workspaceId}/records/{object}/{id}/comments/{commentId}',
       outputDescription: 'Removed',
     },
   }),

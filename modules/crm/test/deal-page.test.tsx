@@ -38,17 +38,17 @@ const setup = async (data: Record<string, unknown> = {}) => {
 };
 
 describe('the deal page', () => {
-  it('is one page, not tabs: the stage, then notes and activity, with its terms beside', async () => {
+  it('is one page, not tabs: the stage, then comments and activity, with its terms beside', async () => {
     const { show } = await setup();
     show();
-    await screen.findByText('Notes');
+    await screen.findByText('Comments');
     expect(document.querySelector('[data-slot="split-shell"]')).toBeTruthy();
     expect(screen.queryByRole('tablist')).toBeNull();
     const main = document.querySelector('[data-slot="split-main"]');
     expect([...(main?.querySelectorAll('[data-cell]') ?? [])].map((cell) => cell.getAttribute('data-cell'))).toEqual([
       'title',
       'deal_stage',
-      'notes',
+      'comments',
       'activity',
     ]);
     // Nothing of the Quotes module is named here: it adds its own section to the page where it is installed.

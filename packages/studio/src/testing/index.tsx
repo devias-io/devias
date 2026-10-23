@@ -286,7 +286,7 @@ export const createFakeClient = (
   options: {
     ai?: AiClient;
     activity?: DeviasClient['activity'];
-    notes?: DeviasClient['notes'];
+    comments?: DeviasClient['comments'];
     notifications?: DeviasClient['notifications'];
     documents?: DeviasClient['documents'];
     tasks?: DeviasClient['tasks'];
@@ -422,7 +422,7 @@ export const createFakeClient = (
     activity: options.activity ?? {
       list: async () => ({ items: [], nextCursor: null }),
     },
-    notes: options.notes ?? {
+    comments: options.comments ?? {
       list: async () => ({ items: [], nextCursor: null, total: 0 }),
       create: async () => {
         throw new Error('not implemented');

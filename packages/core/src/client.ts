@@ -55,7 +55,6 @@ import type {
   ModuleEventQuery,
   ModuleVariable,
 } from './module-runtime';
-import type { Note, NoteInput, NotePage, NotePatch, NoteQuery } from './notes';
 import type {
   MarkAllReadResult,
   Notification,
@@ -67,6 +66,13 @@ import type {
 } from './notifications';
 import type { AggregateQuery, AggregateResult } from './query/aggregate';
 import type { Page, Query, RecordData } from './query/ir';
+import type {
+  RecordComment,
+  RecordCommentInput,
+  RecordCommentPage,
+  RecordCommentPatch,
+  RecordCommentQuery,
+} from './record-comments';
 import type {
   Task,
   TaskActivityEntry,
@@ -196,15 +202,15 @@ export interface DeviasClient {
   activity: {
     list(object: string, id: string, query?: ActivityQuery): Promise<ActivityPage>;
   };
-  /** A record's notes: titled, editable text that belongs to the record. */
-  notes: {
-    list(object: string, id: string, query?: NoteQuery): Promise<NotePage>;
-    /** Writes a note as the caller. */
-    create(object: string, id: string, input: NoteInput): Promise<Note>;
-    /** Authors edit their own notes; admins any. */
-    update(object: string, id: string, noteId: string, patch: NotePatch): Promise<Note>;
-    /** Authors remove their own notes; admins any. */
-    delete(object: string, id: string, noteId: string): Promise<void>;
+  /** A record's comments: titled, editable text that belongs to the record. */
+  comments: {
+    list(object: string, id: string, query?: RecordCommentQuery): Promise<RecordCommentPage>;
+    /** Writes a comment as the caller. */
+    create(object: string, id: string, input: RecordCommentInput): Promise<RecordComment>;
+    /** Authors edit their own comments; admins any. */
+    update(object: string, id: string, commentId: string, patch: RecordCommentPatch): Promise<RecordComment>;
+    /** Authors remove their own comments; admins any. */
+    delete(object: string, id: string, commentId: string): Promise<void>;
   };
   /** Documents: titled pages of rich text that mention records and each other. */
   documents: {

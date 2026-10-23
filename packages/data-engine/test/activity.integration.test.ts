@@ -73,13 +73,13 @@ describe('record activity on PGlite', () => {
   });
 });
 
-describe('purging a workspace with notes', () => {
+describe('purging a workspace with comments', () => {
   it('leaves none of them behind', async () => {
     const t = await createTestEngine();
 
     try {
       const deal = await t.engine.records.create(t.owner, 'opportunity', { name: 'Gone soon' });
-      await t.engine.notes.create(t.owner, 'opportunity', deal.id, { title: 'Gate code' });
+      await t.engine.comments.create(t.owner, 'opportunity', deal.id, { title: 'Gate code' });
       const count = async (table: string) =>
         (await t.client.query<{ n: number }>(`SELECT count(*)::int AS n FROM ${table}`)).rows[0]?.n;
       expect(await count('comment')).toBe(1);

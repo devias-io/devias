@@ -57,6 +57,14 @@ describe('the system prompt by area', () => {
     expect(skilled.slice(0, skilled.indexOf('\n\n## Skills'))).toBe(base);
   });
 
+  it('says a comment on a record is not an object, and that the data model does not list the agent’s own tools', () => {
+    const records = prompt('records');
+    expect(records).toContain('A comment on a record is not an object or a record');
+    expect(records).toContain('comment_on_record');
+    expect(records).toContain('never your own tools');
+    expect(prompt('modules')).not.toContain('A comment on a record is not an object');
+  });
+
   it('gives an agent with every tool every section, in a fixed order', () => {
     const full = buildSystemPrompt(new Set(ALL));
     const order = [

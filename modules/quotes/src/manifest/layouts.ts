@@ -23,7 +23,7 @@ export const layouts = [
     main: [
       { blockId: coreIds.blocks.title, label: 'Title', config: { fieldId: ids.fields.quote.title } },
       { blockId: ids.blocks.quote_items, label: 'Items' },
-      { blockId: coreIds.blocks.notes, label: 'Notes' },
+      { blockId: coreIds.blocks.comments, label: 'Comments' },
       { blockId: coreIds.blocks.activity, label: 'Activity' },
     ],
     aside: [
