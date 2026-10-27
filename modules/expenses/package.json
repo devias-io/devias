@@ -1,0 +1,23 @@
+{
+  "name": "@devias/mod-expenses",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Expenses module: what the business spends, by category, supplier and deal, from draft through approval to reimbursement. A manifest only.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    "./manifest": "./src/manifest/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@devias/core": "workspace:*",
+    "@devias/mod-crm": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

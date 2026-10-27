@@ -1,0 +1,87 @@
+import { cn } from '../lib/cn';
+
+/** The Devias wordmark, as published at devias.io (`assets/logo.svg`). Drawn in the current text color. */
+const WORDMARK_PATH =
+  'M30.9381 6.71219C33.3365 6.71219 35.31 7.54166 36.8582 9.20059C38.4281 10.8595 39.2132 12.9114 39.2132 15.3561C39.2132 15.9018 39.1585 16.4802 39.0497 17.0914H26.7189C27.2857 19.1432 28.8231 20.1691 31.3306 20.1691C32.9442 20.1691 34.1653 19.6234 34.9937 18.532L38.3955 20.4965C36.7819 22.8321 34.405 24 31.2651 24C28.5612 24 26.3918 23.1814 24.7564 21.5443C23.1209 19.9072 22.3032 17.8445 22.3032 15.3561C22.3032 12.8895 23.1098 10.8377 24.7234 9.20059C26.337 7.54166 28.4087 6.71219 30.9381 6.71219ZM74.2365 6.71219C76.5258 6.71219 78.3029 7.50885 79.5676 9.10229V7.17058H83.7874V23.5416H79.5676V21.6098C78.3029 23.2032 76.5258 24 74.2365 24C72.056 24 70.1808 23.1705 68.6109 21.5116C67.0621 19.8308 66.2887 17.779 66.2887 15.3561C66.2887 12.9332 67.0621 10.8922 68.6109 9.23326C70.1808 7.5525 72.056 6.71219 74.2365 6.71219ZM93.3078 6.71219C94.6377 6.71219 95.8479 7.01778 96.9383 7.62897C98.0284 8.21832 98.8901 9.06962 99.5218 10.1828L95.9245 12.1474C95.4013 11.0341 94.5289 10.4775 93.3078 10.4775C92.7625 10.4775 92.3047 10.5976 91.9337 10.8377C91.5848 11.0778 91.4105 11.4052 91.4105 11.82C91.4105 12.2565 91.6942 12.6166 92.2614 12.9004C92.8494 13.1623 93.558 13.4024 94.3865 13.6207C95.2153 13.8172 96.0437 14.0791 96.8725 14.4065C97.701 14.7121 98.3988 15.236 98.9657 15.9781C99.555 16.7203 99.8495 17.648 99.8495 18.7613C99.8495 20.442 99.2165 21.7407 97.9518 22.6575C96.7096 23.5525 95.1501 24 93.2749 24C89.9171 24 87.6268 22.7012 86.4058 20.1036L90.0692 18.0409C90.5488 19.4598 91.6177 20.1691 93.2749 20.1691C94.779 20.1691 95.5319 19.6999 95.5319 18.7613C95.5319 18.3247 95.2374 17.9755 94.6481 17.7135C94.0812 17.4298 93.3834 17.1787 92.5549 16.9604C91.7265 16.7421 90.8977 16.4693 90.0692 16.1419C89.2404 15.8145 88.5322 15.3015 87.9438 14.603C87.377 13.8826 87.0929 12.9877 87.0929 11.9181C87.0929 10.3028 87.6822 9.03681 88.8596 8.12003C90.0585 7.18143 91.5411 6.71219 93.3078 6.71219ZM9.09289 0.622099C12.2328 0.622099 14.8494 1.72441 16.9426 3.92905C19.0579 6.13368 20.1154 8.85134 20.1154 12.0819C20.1154 15.3124 19.0579 18.03 16.9426 20.2346C14.8494 22.4392 12.2328 23.5416 9.09289 23.5416H0V0.622099H9.09289ZM44.3653 7.17058L48.3229 18.6303L52.3131 7.17058H56.9581L50.7435 23.5416H45.9353L39.721 7.17058H44.3653ZM63.2449 7.17058V23.5416H59.0254V7.17058H63.2449ZM75.0216 10.7394C73.7133 10.7394 72.6336 11.176 71.7837 12.0491C70.9327 12.9004 70.5073 14.0028 70.5073 15.3561C70.5073 16.7094 70.9327 17.8227 71.7837 18.6958C72.6336 19.5471 73.7133 19.9727 75.0216 19.9727C76.33 19.9727 77.4096 19.5471 78.2596 18.6958C79.1317 17.8227 79.5676 16.7094 79.5676 15.3561C79.5676 14.0028 79.1317 12.9004 78.2596 12.0491C77.4096 11.176 76.33 10.7394 75.0216 10.7394ZM9.09289 4.94412H4.5137V19.2197H9.09289C11.0772 19.2197 12.6908 18.5648 13.9337 17.2551C15.1765 15.9236 15.7981 14.1992 15.7981 12.0819C15.7981 9.96457 15.1765 8.251 13.9337 6.94132C12.6908 5.60981 11.0772 4.94412 9.09289 4.94412ZM30.9381 10.5103C29.8043 10.5103 28.8664 10.8049 28.1253 11.3942C27.3838 11.9618 26.8932 12.7694 26.6534 13.8172H34.9937C34.7539 12.7039 34.2526 11.8745 33.4893 11.3288C32.7478 10.7831 31.8975 10.5103 30.9381 10.5103ZM61.1185 0C61.8378 0 62.4483 0.261937 62.9504 0.78581C63.4736 1.30968 63.7352 1.92087 63.7352 2.61937C63.7352 3.31786 63.4736 3.92905 62.9504 4.45292C62.4483 4.95497 61.8378 5.20605 61.1185 5.20605C60.4207 5.20605 59.8102 4.95497 59.287 4.45292C58.7849 3.92905 58.5347 3.31786 58.5347 2.61937C58.5347 1.92087 58.7849 1.30968 59.287 0.78581C59.8102 0.261937 60.4207 0 61.1185 0Z';
+
+/** A "d" in two parts: the bowl as a ring and the stem with its flag, drawn in a 64 box. */
+const MARK_BOWL = 'M43 38A18 18 0 1 0 7 38A18 18 0 1 0 43 38ZM35 38A10 10 0 1 1 15 38A10 10 0 1 1 35 38Z';
+const MARK_STEM = 'M41 15L49 8V52H41Z';
+
+/** Centres the glyph (x 7–49, y 8–56) in a 160 box, scaled so its 64 box spans 120 of it: on the tile, and on the website. */
+const TILE_TRANSFORM = 'translate(27.5 20) scale(1.875)';
+
+/** The glyph in that box, cropped to its edges (x 40–120, y 34–126): what the website's header draws. */
+const GLYPH_VIEWBOX = '40 34 80 92';
+
+/** The glyph's bounds, with a little room, for when it is drawn without its tile. */
+const BARE_VIEWBOX = '1 5 54 54';
+
+/**
+ * The mark on its lime tile, the same in light and dark since the tile carries the contrast. Without the tile it is
+ * the bare "d" in the brand color, cropped to fill the box like an icon, for places that have a surface of their
+ * own such as the sidebar.
+ */
+export function BrandMark({ className, tile = true }: { className?: string; tile?: boolean }) {
+  return (
+    <svg viewBox={tile ? '0 0 160 160' : BARE_VIEWBOX} className={cn('size-7 shrink-0', className)} aria-hidden="true">
+      {tile ? <rect width="160" height="160" rx="38" className="fill-brand" /> : null}
+      <g transform={tile ? TILE_TRANSFORM : undefined} className={tile ? 'fill-[#0d2b1b]' : 'fill-brand-strong'}>
+        <path d={MARK_BOWL} fillRule="evenodd" />
+        <path d={MARK_STEM} />
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * The bare "d" in the text color, as the website's header draws it. It is cropped to the glyph, so its height is the
+ * glyph's own and the lettering beside it lines up with it. Size it by height.
+ */
+export function BrandGlyph({ className }: { className?: string }) {
+  return (
+    <svg viewBox={GLYPH_VIEWBOX} className={cn('h-6 w-auto shrink-0 fill-current', className)} aria-hidden="true">
+      <g transform={TILE_TRANSFORM}>
+        <path d={MARK_BOWL} fillRule="evenodd" />
+        <path d={MARK_STEM} />
+      </g>
+    </svg>
+  );
+}
+
+/** The "Devias" lettering on its own. Size it by height; it keeps its proportions. */
+export function BrandWordmark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 100 24"
+      role="img"
+      aria-label="Devias"
+      className={cn('h-4 w-auto shrink-0 fill-current', className)}
+    >
+      <path d={WORDMARK_PATH} />
+    </svg>
+  );
+}
+
+/**
+ * The mark and the lettering side by side. Without the tile it is the website's logo: the bare "d" and the lettering,
+ * both in the text color, a little closer together.
+ */
+export function BrandLockup({
+  className,
+  markClassName,
+  wordmarkClassName,
+  tile = true,
+}: {
+  className?: string;
+  markClassName?: string;
+  wordmarkClassName?: string;
+  tile?: boolean;
+}) {
+  return (
+    <span className={cn('inline-flex items-center', tile ? 'gap-2.5' : 'gap-[5px]', className)}>
+      {tile ? <BrandMark className={markClassName} /> : <BrandGlyph className={markClassName} />}
+      <BrandWordmark className={wordmarkClassName} />
+    </span>
+  );
+}

@@ -1,0 +1,78 @@
+import { coreIds, defineView } from '@devias/core';
+import { ids } from './ids';
+
+/** Every product, the goods and the services on their own, and every price (they are edited from their product). */
+export const views = [
+  defineView({
+    id: ids.views.product.all,
+    objectId: ids.objects.product,
+    label: 'All products',
+    type: 'table',
+    icon: 'table',
+    isDefault: true,
+    position: 0,
+    fields: [
+      { fieldId: ids.fields.product.name, width: 260 },
+      { fieldId: ids.fields.product.images, width: 130 },
+      { fieldId: ids.fields.product.kind, width: 110 },
+      { fieldId: ids.fields.product.sku, width: 130 },
+      { fieldId: ids.fields.product.default_price, width: 170 },
+      { fieldId: ids.fields.product.unit, width: 120 },
+      { fieldId: ids.fields.product.active, width: 100 },
+    ],
+    sorts: [{ fieldId: ids.fields.product.name, direction: 'asc' }],
+  }),
+  defineView({
+    id: ids.views.product.goods,
+    objectId: ids.objects.product,
+    label: 'Goods',
+    type: 'table',
+    icon: 'table',
+    position: 1,
+    fields: [
+      { fieldId: ids.fields.product.name, width: 260 },
+      { fieldId: ids.fields.product.sku, width: 130 },
+      { fieldId: ids.fields.product.default_price, width: 170 },
+      { fieldId: ids.fields.product.unit, width: 120 },
+      { fieldId: ids.fields.product.active, width: 100 },
+    ],
+    filter: { field: ids.fields.product.kind, op: 'eq', value: 'good' },
+    sorts: [{ fieldId: ids.fields.product.name, direction: 'asc' }],
+  }),
+  defineView({
+    id: ids.views.product.services,
+    objectId: ids.objects.product,
+    label: 'Services',
+    type: 'table',
+    icon: 'table',
+    position: 2,
+    fields: [
+      { fieldId: ids.fields.product.name, width: 260 },
+      { fieldId: ids.fields.product.default_price, width: 170 },
+      { fieldId: ids.fields.product.unit, width: 120 },
+      { fieldId: ids.fields.product.active, width: 100 },
+    ],
+    filter: { field: ids.fields.product.kind, op: 'eq', value: 'service' },
+    sorts: [{ fieldId: ids.fields.product.name, direction: 'asc' }],
+  }),
+  defineView({
+    id: ids.views.price.all,
+    objectId: ids.objects.price,
+    label: 'All prices',
+    type: 'table',
+    icon: 'table',
+    isDefault: true,
+    position: 0,
+    fields: [
+      { fieldId: ids.fields.price.product, width: 220 },
+      { fieldId: ids.fields.price.nickname, width: 160 },
+      { fieldId: ids.fields.price.amount, width: 120 },
+      { fieldId: ids.fields.price.type, width: 120 },
+      { fieldId: ids.fields.price.interval, width: 100 },
+      { fieldId: ids.fields.price.tax_behavior, width: 130 },
+      { fieldId: ids.fields.price.lookup_key, width: 160 },
+      { fieldId: ids.fields.price.active, width: 100 },
+    ],
+    sorts: [{ fieldId: coreIds.fields.created_at, direction: 'desc' }],
+  }),
+];

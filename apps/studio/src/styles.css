@@ -1,0 +1,10 @@
+@import "@devias/ui/styles.css";
+
+/* Tailwind v4 does not scan symlinked workspace packages by default. */
+@source "../../../packages/ui/src";
+@source "../../../packages/studio/src";
+@source "../../../modules/crm/src";
+@source "../../../modules/products/src";
+@source "../../../modules/invoicing/src";
+@source "../../../modules/inventory/src";
+@source "../../../modules/quotes/src";

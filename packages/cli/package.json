@@ -1,0 +1,31 @@
+{
+  "name": "@devias/cli",
+  "version": "0.0.0",
+  "private": true,
+  "description": "devias plan | apply | dev: reconcile a module manifest into a workspace using an API key.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "devias": "./bin/devias.js"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@devias/core": "workspace:*",
+    "@devias/sdk": "workspace:*",
+    "chokidar": "catalog:",
+    "commander": "catalog:",
+    "picocolors": "catalog:",
+    "tsx": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

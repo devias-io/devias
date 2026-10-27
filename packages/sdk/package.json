@@ -1,0 +1,29 @@
+{
+  "name": "@devias/sdk",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Typed client for the Devias API (HTTP + SSE), a query builder, and an in-memory mock backend.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./mock": "./src/mock/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "generate": "openapi-typescript ../../apps/server/openapi.json -o ./src/generated/openapi.d.ts"
+  },
+  "dependencies": {
+    "@devias/core": "workspace:*",
+    "eventsource-parser": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@devias/fixtures": "workspace:*",
+    "@types/node": "catalog:",
+    "openapi-typescript": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

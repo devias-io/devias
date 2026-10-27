@@ -1,0 +1,34 @@
+{
+  "name": "@devias/mod-enrichment-context-dev",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Context.dev person enrichment: an API key connection, an action that fills in what is missing on a CRM person, and the workflows that run it. Server-only.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    "./manifest": "./src/manifest/index.ts",
+    "./server": "./src/server/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@devias/core": "workspace:*",
+    "@devias/mod-crm": "workspace:*",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "@devias/server": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@devias/server": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

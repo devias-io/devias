@@ -1,0 +1,252 @@
+/*
+ * Typography for the rich-text editor (the ProseMirror root), in theme tokens. ProseMirror renders plain HTML,
+ * so it is styled here rather than with utility classes. `--page` is the full document page, `--compact`
+ * the same editor inside forms and popovers.
+ */
+
+.doc-editor {
+  color: var(--foreground);
+  outline: none;
+  overflow-wrap: break-word;
+}
+
+.doc-editor > :first-child {
+  margin-top: 0;
+}
+
+.doc-editor p {
+  margin: 0;
+  padding: 0.1875em 0;
+}
+
+.doc-editor h1,
+.doc-editor h2,
+.doc-editor h3 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.doc-editor ul,
+.doc-editor ol {
+  margin: 0;
+  padding-left: 1.6em;
+}
+
+.doc-editor ul {
+  list-style: disc;
+}
+
+.doc-editor ul ul {
+  list-style: circle;
+}
+
+.doc-editor ol {
+  list-style: decimal;
+}
+
+.doc-editor li > p {
+  padding: 0.125em 0;
+}
+
+.doc-editor blockquote {
+  margin: 0.25em 0;
+  border-left: 3px solid var(--foreground);
+  padding: 0 0 0 0.9em;
+}
+
+.doc-editor code {
+  border-radius: 0.25rem;
+  background: var(--muted);
+  padding: 0.15em 0.35em;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+.doc-editor pre {
+  margin: 0.5em 0;
+  overflow-x: auto;
+  border-radius: 0.375rem;
+  background: var(--muted);
+  padding: 1em 1.25em;
+  font-size: 0.875em;
+  line-height: 1.55;
+}
+
+.doc-editor pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+.doc-editor hr {
+  margin: 0.75em 0;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+.doc-editor a:not(.doc-mention) {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--muted-foreground);
+  text-underline-offset: 3px;
+}
+
+/* To-do lists */
+.doc-editor ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0.1em;
+}
+
+.doc-editor ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55em;
+}
+
+.doc-editor ul[data-type="taskList"] li > label {
+  display: flex;
+  flex: none;
+  height: 1.6em;
+  align-items: center;
+  user-select: none;
+}
+
+.doc-editor ul[data-type="taskList"] li > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.doc-editor ul[data-type="taskList"] input[type="checkbox"] {
+  width: 1em;
+  height: 1em;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+.doc-editor ul[data-type="taskList"] li[data-checked="true"] > div {
+  color: var(--muted-foreground);
+  text-decoration: line-through;
+}
+
+/* Hint on the empty line holding the cursor (set by the Placeholder extension). */
+.doc-editor .is-placeholder::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--muted-foreground);
+  opacity: 0.7;
+}
+
+/* Page: a 16px body with roomy headings. */
+.doc-editor--page {
+  min-height: 12rem;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.doc-editor--page h1 {
+  margin: 1.1em 0 0.15em;
+  font-size: 1.875em;
+}
+
+.doc-editor--page h2 {
+  margin: 1em 0 0.1em;
+  font-size: 1.5em;
+}
+
+.doc-editor--page h3 {
+  margin: 0.8em 0 0.05em;
+  font-size: 1.25em;
+}
+
+/* Compact: form fields and popovers. */
+.doc-editor--compact {
+  min-height: 5rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.doc-editor--compact h1 {
+  margin: 0.75em 0 0.2em;
+  font-size: 1.25em;
+}
+
+.doc-editor--compact h2 {
+  margin: 0.7em 0 0.15em;
+  font-size: 1.125em;
+}
+
+.doc-editor--compact h3 {
+  margin: 0.6em 0 0.1em;
+  font-size: 1em;
+}
+
+/* Chat: a message box that grows to a few lines, then scrolls. */
+.doc-editor--chat {
+  min-height: 2.5rem;
+  max-height: 10rem;
+  overflow-y: auto;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Tables: bordered cells, a tinted header row, and a highlight for selected cells. */
+.doc-editor .tableWrapper {
+  margin: 0.75em 0;
+  overflow-x: auto;
+}
+
+.doc-editor table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.95em;
+}
+
+.doc-editor th,
+.doc-editor td {
+  position: relative;
+  min-width: 4rem;
+  border: 1px solid var(--border);
+  padding: 0.35em 0.6em;
+  vertical-align: top;
+  text-align: left;
+}
+
+.doc-editor th {
+  background: var(--muted);
+  font-weight: 600;
+}
+
+.doc-editor th > p,
+.doc-editor td > p {
+  padding: 0.05em 0;
+}
+
+.doc-editor .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+  pointer-events: none;
+}
+
+/* Text with a comment on it (set by the CommentAnchors extension): a soft underline, stronger for the one looked at. */
+.doc-editor .doc-comment-anchor {
+  border-bottom: 2px solid color-mix(in oklab, var(--warning) 45%, transparent);
+  background: color-mix(in oklab, var(--warning) 12%, transparent);
+  cursor: pointer;
+}
+
+.doc-editor .doc-comment-anchor.is-active {
+  border-bottom-color: var(--warning);
+  background: color-mix(in oklab, var(--warning) 28%, transparent);
+}
+
+/* The text of a comment being written, while the box is open. */
+.doc-editor .doc-comment-anchor.is-draft {
+  border-bottom-style: dashed;
+  background: color-mix(in oklab, var(--warning) 22%, transparent);
+}

@@ -1,0 +1,56 @@
+{
+  "name": "devias",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Operations platform modeled on each customer's business: a composable studio and modules on a metadata-driven data engine, with AI agents.",
+  "license": "AGPL-3.0-only",
+  "author": {
+    "name": "Devias",
+    "url": "https://devias.io"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
+  },
+  "packageManager": "pnpm@10.18.3",
+  "scripts": {
+    "dev": "pnpm --parallel --filter '@devias/server-app' --filter '@devias/studio-app' dev",
+    "dev:server": "pnpm --filter @devias/server-app dev",
+    "dev:studio": "pnpm --filter @devias/studio-app dev",
+    "build": "pnpm -r --filter './packages/*' --filter './apps/*' build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "pnpm -r --parallel typecheck",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "db:generate": "pnpm --filter @devias/server-app db:generate",
+    "db:migrate": "pnpm --filter @devias/server-app db:migrate",
+    "auth:generate": "pnpm --filter @devias/server-app auth:generate",
+    "sdk:generate": "pnpm --filter @devias/sdk generate",
+    "smoke:api": "tsx scripts/smoke-api.mjs",
+    "smoke:ui": "node scripts/smoke-ui.mjs"
+  },
+  "dependencies": {
+    "@devias/core": "workspace:*",
+    "@devias/mod-crm": "workspace:*",
+    "@devias/mod-expenses": "workspace:*",
+    "@devias/mod-inventory": "workspace:*",
+    "@devias/mod-invoicing": "workspace:*",
+    "@devias/mod-email-resend": "workspace:*",
+    "@devias/mod-enrichment-context-dev": "workspace:*",
+    "@devias/mod-payment-stripe": "workspace:*",
+    "@devias/mod-products": "workspace:*",
+    "@devias/mod-quotes": "workspace:*",
+    "@devias/studio": "workspace:*"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@types/node": "catalog:",
+    "playwright-core": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "tsx": "catalog:"
+  }
+}

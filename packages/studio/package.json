@@ -1,0 +1,77 @@
+{
+  "name": "@devias/studio",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The studio runtime (providers, config-driven router, auth pages, shell, registries, view engine, record page, settings), shipped as the `studio` module.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./manifest": "./src/manifest.ts",
+    "./server": "./src/server/index.ts",
+    "./vite": {
+      "types": "./vite.d.ts",
+      "default": "./vite.js"
+    },
+    "./client": {
+      "types": "./client.d.ts"
+    },
+    "./testing": "./src/testing/index.tsx"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@devias/core": "workspace:*",
+    "@devias/sdk": "workspace:*",
+    "@devias/server": "workspace:*",
+    "@devias/ui": "workspace:*",
+    "@dnd-kit/core": "catalog:",
+    "@dnd-kit/sortable": "catalog:",
+    "@dnd-kit/utilities": "catalog:",
+    "@hookform/resolvers": "catalog:",
+    "@tanstack/react-query": "catalog:",
+    "@tanstack/react-router": "catalog:",
+    "@tanstack/react-table": "catalog:",
+    "@tanstack/react-virtual": "catalog:",
+    "@tiptap/extension-list": "catalog:",
+    "@tiptap/extension-mention": "catalog:",
+    "@tiptap/extension-table": "catalog:",
+    "@tiptap/pm": "catalog:",
+    "@tiptap/react": "catalog:",
+    "@tiptap/starter-kit": "catalog:",
+    "@tiptap/suggestion": "catalog:",
+    "@xyflow/react": "catalog:",
+    "better-auth": "catalog:",
+    "date-fns": "catalog:",
+    "react-grid-layout": "catalog:",
+    "react-hook-form": "catalog:",
+    "react-markdown": "catalog:",
+    "remark-gfm": "catalog:",
+    "sonner": "catalog:",
+    "zod": "catalog:",
+    "zustand": "catalog:"
+  },
+  "peerDependencies": {
+    "react": ">=19",
+    "react-dom": ">=19",
+    "vite": ">=7"
+  },
+  "devDependencies": {
+    "@testing-library/react": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "jsdom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  }
+}

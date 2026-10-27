@@ -1,0 +1,21 @@
+{
+  "name": "@devias/fixtures",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Neutral manifests the packages' tests build on: a small contacts-and-deals module and two modules that connect to an outside service (settings, actions, events). Packages know no real module; they test against these.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@devias/core": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}

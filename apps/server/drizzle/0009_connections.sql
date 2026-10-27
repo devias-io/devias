@@ -1,0 +1,27 @@
+CREATE TABLE "connection" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"workspace_id" text NOT NULL,
+	"module_id" text NOT NULL,
+	"provider_id" text NOT NULL,
+	"kind" text NOT NULL,
+	"visibility" text NOT NULL,
+	"owner_user_id" text,
+	"label" text,
+	"account" text,
+	"sealed" text NOT NULL,
+	"hints" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"scopes" jsonb DEFAULT '[]'::jsonb NOT NULL,
+	"expires_at" timestamp with time zone,
+	"status" text DEFAULT 'connected' NOT NULL,
+	"auth_failed_at" timestamp with time zone,
+	"last_error" text,
+	"last_tested_at" timestamp with time zone,
+	"last_used_at" timestamp with time zone,
+	"webhook_token" text,
+	"created_by" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "connection_owner_account_uq" UNIQUE NULLS NOT DISTINCT("workspace_id","module_id","provider_id","owner_user_id","account"),
+	CONSTRAINT "connection_webhook_token_uq" UNIQUE("webhook_token")
+);--> statement-breakpoint
+CREATE INDEX "connection_ws_module_idx" ON "connection" USING btree ("workspace_id","module_id");
