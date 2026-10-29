@@ -289,7 +289,7 @@ export const createDocumentService = (deps: DocumentServiceDeps): DocumentServic
     const target = parseLink(mentions);
 
     if (!target) {
-      throw validationError('`mentions` must be a link: record:<object>/<id>, document:<id> or task:<id>', {
+      throw validationError('`mentions` must be a link: record:<object>/<id>, document:<id>, task:<id> or asset:<id>', {
         path: 'mentions',
       });
     }

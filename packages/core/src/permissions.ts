@@ -21,6 +21,10 @@ export const PERMISSIONS = [
   'document.read',
   /** Write, append to and delete documents. */
   'document.write',
+  /** Read the files of the workspace and open them. */
+  'asset.read',
+  /** Upload, rename, describe and delete files. */
+  'asset.write',
   /** Read tasks and their timelines. */
   'task.read',
   /** Create, change, comment on and delete tasks. */

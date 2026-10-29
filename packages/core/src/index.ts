@@ -1,6 +1,7 @@
 export * from './actions';
 export * from './activity';
 export * from './ai';
+export * from './asset';
 export * from './auth';
 export * from './client';
 export * from './config/blocks';
@@ -16,6 +17,7 @@ export * from './document';
 export * from './document-anchor';
 export * from './events';
 export * from './fields/value-map';
+export * from './file';
 export * from './hash';
 export * from './ids';
 export * from './import/cells';

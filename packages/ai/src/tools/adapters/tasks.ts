@@ -26,7 +26,7 @@ const Assignee = z
 const About = z
   .array(z.string().min(1).max(300))
   .max(TASK_ABOUT_MAX)
-  .describe('What the task is about: links such as record:<object>/<id>, document:<id> or task:<id>');
+  .describe('What the task is about: links such as record:<object>/<id>, document:<id>, task:<id> or asset:<id>');
 const DueDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD');
 
 /** A task in a list: what the model needs to pick one, never its description. */

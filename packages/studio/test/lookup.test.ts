@@ -37,4 +37,16 @@ describe('what @ offers', () => {
     expect(byEmail.map((hit) => hit.recordId)).toEqual(['u2']);
     expect(await lookupEntities(client, 'zzz', { members: [member('u1', 'Ana', 'a@b.c')] })).toEqual([]);
   });
+
+  it('offers assets by their name or description', async () => {
+    const client = createMockClient({ workspaceId: 'ws1', manifests: [] });
+    const logo = await client.assets.upload({ name: 'Brand logo.png', body: new Uint8Array([0x89, 0x50, 0x4e, 0x47]) });
+    await client.assets.upload({ name: 'notes.txt', description: 'About the brand', body: 'x' });
+
+    const hits = await lookupEntities(client, 'logo', {});
+    expect(hits.map((hit) => [hit.object, hit.recordId, hit.title, hit.subtitle])).toEqual([
+      ['asset', logo.id, 'Brand logo.png', 'Asset'],
+    ]);
+    expect((await lookupEntities(client, 'brand', {})).filter((hit) => hit.object === 'asset')).toHaveLength(2);
+  });
 });

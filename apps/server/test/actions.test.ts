@@ -142,6 +142,8 @@ const TRANSPORT_ONLY: Record<string, string> = {
   'POST /api/workspaces/:workspaceId/ai/conversations/:id/messages': "The agent's own transport.",
   'POST /api/workspaces/:workspaceId/ai/conversations/:id/tool-calls/:toolCallId/resolve': "The agent's own transport.",
   'POST /api/workspaces/:workspaceId/ai/conversations/:id/cancel': "The agent's own transport.",
+  'POST /api/workspaces/:workspaceId/assets':
+    'An upload is the bytes of a file, which an action cannot carry; an agent creates files from text.',
 };
 /** Module routers; modules reach the agent through their declared actions. */
 const MODULE_ROUTES = /^[A-Z]+ \/api\/workspaces\/:workspaceId\/mod\//;

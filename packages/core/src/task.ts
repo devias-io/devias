@@ -170,7 +170,7 @@ export type TaskSummary = z.infer<typeof TaskSummarySchema>;
 
 export const TaskLinkSchema = z
   .object({
-    /** `record:<object>/<id>`, `document:<id>` or `task:<id>`. */
+    /** `record:<object>/<id>`, `document:<id>`, `task:<id>` or `asset:<id>`. */
     link: z.string(),
     /** Mentioned in the description, or named as what the task is about. */
     role: z.enum(['mention', 'about']),
@@ -275,7 +275,7 @@ export const TaskQuerySchema = z
     today: DueDateSchema.optional(),
     /** Only subtasks of this task, or `none` for top-level tasks. */
     parent: z.string().min(1).optional(),
-    /** Only tasks that mention or are about this: `record:<object>/<id>`, `document:<id>` or `task:<id>`. */
+    /** Only tasks that mention or are about this: `record:<object>/<id>`, `document:<id>`, `task:<id>` or `asset:<id>`. */
     mentions: z.string().min(1).optional(),
     /** Only these work states: separated by commas. */
     work: z.string().min(1).optional(),

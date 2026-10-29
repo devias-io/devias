@@ -171,7 +171,10 @@ export const createMetadataStore = ({ dataSource, clock }: MetadataStoreDeps) =>
 
   const ensureObjectNameFree = async (db: Db, workspaceId: string, name: string, exceptId?: string) => {
     if (RESERVED_OBJECT_NAMES.has(name)) {
-      throw validationError(`"${name}" is a reserved object name`, { name });
+      throw validationError(
+        `"${name}" is a reserved object name: the platform uses it for its own things. Pick another API name; the label can still be the same.`,
+        { name },
+      );
     }
 
     const rows = await db

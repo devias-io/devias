@@ -16,6 +16,7 @@ import { createActorMiddleware } from './middleware/actor';
 import { createWorkspaceMiddleware } from './middleware/workspace';
 import { mountActions } from './mount-actions';
 import { registerAiRoutes } from './routes/ai';
+import { registerAssetRoutes } from './routes/assets';
 import { registerCoreRoutes } from './routes/core';
 import { registerEventRoutes } from './routes/events';
 import { registerLogoRoutes } from './routes/logos';
@@ -31,7 +32,7 @@ export interface AppDeps {
   runtime: ModuleRuntime;
   ai: AiService;
   actions: ActionRegistry;
-  config: Pick<ServerConfig, 'studioOrigin' | 'authUrl'>;
+  config: Pick<ServerConfig, 'studioOrigin' | 'authUrl' | 'files'>;
   logger: Logger;
 }
 
@@ -85,16 +86,16 @@ export const createApp = (deps: AppDeps) => {
     description: 'Workspace api key',
   });
 
-  app.use(
-    '/api/*',
-    cors({
-      origin: config.studioOrigin,
-      credentials: true,
-      allowHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'If-None-Match', 'Last-Event-ID'],
-      exposeHeaders: ['ETag', 'Content-Length'],
-      allowMethods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-    }),
-  );
+  const allowStudio = cors({
+    origin: config.studioOrigin,
+    credentials: true,
+    allowHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'If-None-Match', 'Last-Event-ID', 'Range'],
+    exposeHeaders: ['ETag', 'Content-Length', 'Content-Range', 'Accept-Ranges', 'Content-Disposition'],
+    allowMethods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  });
+  app.use('/api/*', allowStudio);
+  // Files are not part of the API, but the studio reads some of them with `fetch` (the text of a text file).
+  app.use('/files/*', allowStudio);
 
   app.onError((error, c) => {
     const { status, body } = toErrorResponse(error, (message, meta) => logger.error(message, meta));
@@ -127,6 +128,7 @@ export const createApp = (deps: AppDeps) => {
     studioOrigin: config.studioOrigin,
     sessionUserId: async (headers) => (await auth.api.getSession({ headers }))?.user.id ?? null,
   });
+  registerAssetRoutes(app, { engine, maxBytes: config.files.maxBytes });
   registerLogoRoutes(app, { registry });
   registerAiRoutes(app, { ai, logger });
   registerModuleRouters(app, { engine, registry });

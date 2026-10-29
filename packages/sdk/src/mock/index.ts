@@ -3,6 +3,11 @@ import {
   type Actor,
   type AggregateQuery,
   type ApplyOptions,
+  type AssetLinkInput,
+  type AssetPatch,
+  type AssetQuery,
+  type AssetUploadInput,
+  type AssetUploadOptions,
   type ConnectionAuthorize,
   type ConnectionCreate,
   type ConnectionPatch,
@@ -43,6 +48,16 @@ import {
 } from '@devias/core';
 import { listActivity } from './activity';
 import { createMockAi, type MockAiOptions } from './ai';
+import {
+  assetUsage,
+  deleteAsset,
+  getAsset,
+  linkAsset,
+  listAssets,
+  updateAsset,
+  uploadAsset,
+  workspaceAssetUsage,
+} from './assets';
 import {
   appendToDocument,
   commentOnDocument,
@@ -385,6 +400,22 @@ export const createMockClient = (options: MockClientOptions): MockClient => {
         run(() => updateDocumentComment(store, id, commentId, patch)),
       deleteComment: (id: string, commentId: string) => run(() => deleteDocumentComment(store, id, commentId)),
       delete: (id: string) => run(() => deleteDocument(store, id)),
+    },
+    assets: {
+      list: (query?: AssetQuery) => run(() => listAssets(store, query)),
+      get: (id: string) => run(() => getAsset(store, id)),
+      upload: async (input: AssetUploadInput, options?: AssetUploadOptions) => {
+        options?.onProgress?.({ loaded: 0, total: 0 });
+        const asset = await run(() => uploadAsset(store, input));
+        options?.onProgress?.({ loaded: asset.size, total: asset.size });
+
+        return asset;
+      },
+      update: (id: string, patch: AssetPatch) => run(() => updateAsset(store, id, patch)),
+      delete: (id: string, options?: { force?: boolean }) => run(() => deleteAsset(store, id, options)),
+      link: (id: string, input?: AssetLinkInput) => run(() => linkAsset(store, id, input)),
+      usage: (id: string) => run(() => assetUsage(store, id)),
+      workspaceUsage: () => run(() => workspaceAssetUsage(store)),
     },
     tasks: {
       list: (query?: TaskQuery) => run(() => listTasks(store, query)),

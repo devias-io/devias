@@ -32,7 +32,7 @@ export const RESERVED_FIELD_NAMES = new Set([
 ]);
 
 /** Names no object may take: a mention's `object` for what is not a record (see `links.ts`). */
-export const RESERVED_OBJECT_NAMES = new Set(['workflow', 'document', 'task', 'member', 'agent']);
+export const RESERVED_OBJECT_NAMES = new Set(['workflow', 'document', 'task', 'member', 'agent', 'asset']);
 
 const Ownership = {
   moduleId: ModuleIdSchema.nullable(),

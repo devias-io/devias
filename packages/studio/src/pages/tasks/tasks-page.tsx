@@ -20,7 +20,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SearchInput } from '../../components/search-input';
 import { PriorityIcon } from '../../components/task-icons';
 import { useCreateTask, useTaskCounts, useTasks } from '../../hooks/use-tasks';
-import { browserStorage } from '../../lib/browser-storage';
+import { remember, remembered } from '../../lib/remembered';
 import { useWorkspace } from '../../providers/workspace';
 import { links } from '../../router/links';
 import { useNavigation } from '../../router/navigation';
@@ -33,24 +33,6 @@ type TasksView = 'list' | 'board';
 const VIEW_KEY = 'devias.studio.tasks.view';
 const PRESET_KEY = 'devias.studio.tasks.preset';
 const SCOPE_KEY = 'devias.studio.tasks.scope';
-
-const remembered = <T extends string>(key: string, allowed: readonly T[], fallback: T): T => {
-  try {
-    const value = browserStorage('local')().getItem(key);
-
-    return typeof value === 'string' && (allowed as readonly string[]).includes(value) ? (value as T) : fallback;
-  } catch {
-    return fallback;
-  }
-};
-
-const remember = (key: string, value: string) => {
-  try {
-    browserStorage('local')().setItem(key, value);
-  } catch {
-    // a view that is not remembered is still a view
-  }
-};
 
 /** Add a task by typing its title: it joins the list as `todo`, and is the person's own on "My tasks". */
 function QuickCreate({ assignToMe }: { assignToMe: boolean }) {

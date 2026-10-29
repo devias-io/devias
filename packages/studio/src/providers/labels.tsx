@@ -1,4 +1,6 @@
 import {
+  ASSET_IDS_MAX,
+  ASSET_MENTION,
   type DeviasClient,
   DOCUMENT_MENTION,
   DOCUMENTS_MAX_LIMIT,
@@ -74,6 +76,15 @@ export class LabelResolver {
       const page = await client.documents.list({ ids: ids.join(','), limit: DOCUMENTS_MAX_LIMIT });
 
       return Object.fromEntries(page.items.map((document) => [document.id, document.title]));
+    });
+  }
+
+  /** The names of assets; a removed one has none, which is how a mention of it knows to say so. */
+  static forAssets(client: DeviasClient) {
+    return new LabelResolver(async (ids) => {
+      const page = await client.assets.list({ ids: ids.join(','), limit: ASSET_IDS_MAX });
+
+      return Object.fromEntries(page.items.map((asset) => [asset.id, asset.name]));
     });
   }
 
@@ -178,6 +189,17 @@ export function LabelsProvider({ children }: { children: ReactNode }) {
         if (!resolver) {
           resolver = LabelResolver.forDocuments(client);
           resolvers.set(DOCUMENT_MENTION, resolver);
+        }
+
+        return resolver;
+      }
+
+      if (name === ASSET_MENTION) {
+        let resolver = resolvers.get(ASSET_MENTION);
+
+        if (!resolver) {
+          resolver = LabelResolver.forAssets(client);
+          resolvers.set(ASSET_MENTION, resolver);
         }
 
         return resolver;

@@ -1,6 +1,14 @@
 import { createAiService, createModelClient, type ModelClient } from '@devias/ai';
 import { ACTIONS, type ModuleManifest } from '@devias/core';
-import { createDataEngine, createLocalBus, createPgNotifyBus, type EngineContext } from '@devias/data-engine';
+import {
+  createDataEngine,
+  createFileUrlSigner,
+  createLocalBus,
+  createLocalFileStore,
+  createPgNotifyBus,
+  type EngineContext,
+  type ImageProcessor,
+} from '@devias/data-engine';
 import type { ModuleFetch, ModuleServer } from '@devias/server';
 import { declaredActionSpecs } from './actions/declared';
 import { type ActionRegistry, createActionRegistry } from './actions/registry';
@@ -11,6 +19,7 @@ import { createDb } from './db/client';
 import { runMigrations } from './db/migrate';
 import * as authSchema from './db/schema/auth';
 import { createApp } from './http/app';
+import { createSharpProcessor } from './images/sharp-processor';
 import { createLogger } from './logger';
 import { createNotifier } from './notifications/notifier';
 import {
@@ -38,6 +47,10 @@ export interface CreateServerOptions {
   pgliteDataDir?: string;
   /** Start the workflow runner (record events, module events, schedules, retries); tests leave it off. */
   startTriggers?: boolean;
+  /** Where files are kept, instead of `FILES_DIR` (tests keep them in a temporary folder). */
+  filesDir?: string;
+  /** The image library; leave it out for `sharp`, or pass `null` to run without one (pictures are served as uploaded). */
+  imageProcessor?: ImageProcessor | null;
   /** Inject a model (tests use a scripted fake); `null` disables AI regardless of config. */
   modelClient?: ModelClient | null;
   /** How module code (and OAuth token requests) reach outside services; tests pass a stub. */
@@ -71,6 +84,9 @@ export const createServer = async (config: ServerConfig, options: CreateServerOp
     registry.register(module);
   }
 
+  const imageProcessor =
+    options.imageProcessor === null ? undefined : (options.imageProcessor ?? (await createSharpProcessor(logger)));
+
   const engine = createDataEngine({
     db: db.db,
     bus,
@@ -81,6 +97,16 @@ export const createServer = async (config: ServerConfig, options: CreateServerOp
       ...(options.builtin ?? []),
     ],
     encryptionKey: config.encryptionKey,
+    fileStore: createLocalFileStore(options.filesDir ?? config.files.dir),
+    fileUrls: createFileUrlSigner({
+      secret: `${config.authSecret}:file-urls`,
+      baseUrl: config.authUrl,
+      bucketSeconds: config.files.urlBucketSeconds,
+      maxLinkSeconds: config.files.linkMaxTtlSeconds,
+    }),
+    ...(imageProcessor ? { imageProcessor } : {}),
+    fileMaxBytes: config.files.maxBytes,
+    ...(config.files.quotaBytes === null ? {} : { fileQuotaBytes: config.files.quotaBytes }),
   });
 
   const modelClient =

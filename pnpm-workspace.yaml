@@ -91,6 +91,8 @@ catalog:
   drizzle-kit: ^0.31.11
   "@electric-sql/pglite": ^0.5.8
   pg: ^8.23.0
+  # optional: thumbnails of images (prebuilt binaries; the server runs without it)
+  sharp: ^0.35.5
   "@types/pg": ^8.23.1
   openapi-typescript: ^7.13.0
   openapi-fetch: ^0.17.0

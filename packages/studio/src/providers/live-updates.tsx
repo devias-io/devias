@@ -1,6 +1,8 @@
 import {
+  ASSET_MENTION,
   DOCUMENT_MENTION,
   type EventStreamStatus,
+  isAssetEvent,
   isDocumentEvent,
   isModuleRuntimeEvent,
   isNotificationEvent,
@@ -50,6 +52,7 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
       const commented = new Map<string, { object: string; recordId: string }>();
       let schemaChanged = false;
       let workflowsChanged = false;
+      let assetsChanged = false;
       const documentIds: string[] = [];
       const taskIds: string[] = [];
       let connectionsChanged = false;
@@ -59,6 +62,8 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
       for (const event of batch) {
         if (isWorkflowEvent(event)) {
           workflowsChanged = true;
+        } else if (isAssetEvent(event)) {
+          assetsChanged = true;
         } else if (isDocumentEvent(event)) {
           documentIds.push(event.documentId);
         } else if (isTaskEvent(event)) {
@@ -99,6 +104,13 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
         labels.invalidate(DOCUMENT_MENTION, documentIds);
         void queryClient.invalidateQueries({ queryKey: keys.documents(ws) });
         void queryClient.invalidateQueries({ queryKey: keys.labels(ws, DOCUMENT_MENTION) });
+      }
+
+      // An asset that changed refreshes the library, the open asset and what the workspace stores.
+      if (assetsChanged) {
+        labels.invalidate(ASSET_MENTION);
+        void queryClient.invalidateQueries({ queryKey: keys.assets(ws) });
+        void queryClient.invalidateQueries({ queryKey: keys.labels(ws, ASSET_MENTION) });
       }
 
       // A task that changed refreshes the lists, the open page, its timeline, the counts and the titles mentions show.

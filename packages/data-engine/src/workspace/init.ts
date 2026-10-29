@@ -26,11 +26,13 @@ export interface WorkspaceServiceDeps {
   dataSource: DataSource;
   logger: Logger;
   seedManifests: ModuleManifest[];
+  /** Removes the bytes of the workspace's files, once its rows are gone. */
+  purgeFiles: (workspaceId: string) => Promise<void>;
   apply: (ctx: EngineContext, manifest: ModuleManifest, options: ApplyOptions) => Promise<ApplyResult>;
 }
 
 export const createWorkspaceService = (deps: WorkspaceServiceDeps): WorkspaceService => {
-  const { db, cache, dataSource, logger, seedManifests, apply } = deps;
+  const { db, cache, dataSource, logger, seedManifests, purgeFiles, apply } = deps;
   const ready = new Set<string>();
   const inflight = new Map<string, Promise<void>>();
 
@@ -115,6 +117,7 @@ export const createWorkspaceService = (deps: WorkspaceServiceDeps): WorkspaceSer
         'workflow_run',
         'workflow',
         'document',
+        'file',
         'comment',
         'mention',
         'task',
@@ -132,6 +135,8 @@ export const createWorkspaceService = (deps: WorkspaceServiceDeps): WorkspaceSer
         await runRaw(tx, sql`DELETE FROM ${sql.raw(`"${table}"`)} WHERE workspace_id = ${workspaceId}`);
       }
     });
+    // The rows go first and the bytes after, like a deletion: a crash in between leaves objects the sweeper removes.
+    await purgeFiles(workspaceId);
     cache.invalidate(workspaceId);
     ready.delete(workspaceId);
   };

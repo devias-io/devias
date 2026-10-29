@@ -46,6 +46,9 @@ const VOCABULARY: Vocabulary = {
     'Me.user.name',
     'WorkspaceMember.user.name',
     'WorkspaceSummary.name',
+    // A stored file is called by its file name.
+    'Asset.name',
+    'AssetPatch.name',
   ],
   label: [
     'ActionDefinition.label',

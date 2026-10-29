@@ -1,4 +1,5 @@
 import type { ChatEvent } from '@devias/core';
+import type { ImageProcessor } from '@devias/data-engine';
 import { manifest as crmManifest } from '@devias/mod-crm/manifest';
 import crm from '@devias/mod-crm/server';
 import emailResend from '@devias/mod-email-resend/server';
@@ -12,12 +13,19 @@ export const createTestServer = async (
   options: {
     moduleFetch?: ModuleFetch /** Start workspaces as a product does: core modules only. */;
     bare?: boolean;
+    /** Where files are kept; a temporary folder of the test. */
+    filesDir?: string;
+    /** The image library: `sharp` unless this says otherwise; `null` runs without one. */
+    imageProcessor?: ImageProcessor | null;
+    /** Environment variables on top of the test defaults (limits of files, for instance). */
+    env?: Record<string, string>;
   } = {},
 ): Promise<Server> => {
   const config = loadConfig({
     BETTER_AUTH_SECRET: 'test-secret-test-secret-test-secret-0000',
     MIGRATE_ON_BOOT: 'true',
     LOG_LEVEL: 'error',
+    ...(options.env ?? {}),
   });
 
   return createServer(config, {
@@ -25,6 +33,8 @@ export const createTestServer = async (
     // Most tests want the CRM's objects (and some chores) to work with; a new workspace does not start with them.
     builtin: options.bare ? [] : [crmManifest, choresManifest],
     ...(options.moduleFetch ? { moduleFetch: options.moduleFetch } : {}),
+    ...(options.filesDir ? { filesDir: options.filesDir } : {}),
+    ...(options.imageProcessor !== undefined ? { imageProcessor: options.imageProcessor } : {}),
     pgliteDataDir: 'memory://',
   });
 };
