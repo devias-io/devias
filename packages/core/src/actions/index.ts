@@ -1,3 +1,4 @@
+export * from './assets';
 export * from './define';
 export * from './documents';
 export * from './metadata';
@@ -11,6 +12,7 @@ export * from './workspace';
 
 import type { ActionDefinition } from '../module-runtime';
 import { AGENT_ACTIONS } from './agent-actions';
+import { assetActions } from './assets';
 import { documentActions } from './documents';
 import {
   commandItemActions,
@@ -45,6 +47,7 @@ export const ACTIONS = [
   ...Object.values(activityActions),
   ...Object.values(recordCommentActions),
   ...Object.values(documentActions),
+  ...Object.values(assetActions),
   ...Object.values(taskActions),
   ...Object.values(workflowActions),
   ...Object.values(moduleActions),

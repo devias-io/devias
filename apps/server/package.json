@@ -35,6 +35,7 @@
     "drizzle-orm": "catalog:",
     "hono": "catalog:",
     "pg": "catalog:",
+    "sharp": "catalog:",
     "uuid": "catalog:",
     "zod": "catalog:"
   },

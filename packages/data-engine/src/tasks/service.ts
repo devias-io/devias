@@ -374,9 +374,12 @@ export const createTaskService = (deps: TaskServiceDeps): TaskService => {
       const target = parseLink(text);
 
       if (!target) {
-        throw validationError(`"${text}" is not a link: use record:<object>/<id>, document:<id> or task:<id>`, {
-          path: 'about',
-        });
+        throw validationError(
+          `"${text}" is not a link: use record:<object>/<id>, document:<id>, task:<id> or asset:<id>`,
+          {
+            path: 'about',
+          },
+        );
       }
 
       const indexed = indexedLinkOf(index, target);
@@ -572,9 +575,12 @@ export const createTaskService = (deps: TaskServiceDeps): TaskService => {
       const target = parseLink(query.mentions);
 
       if (!target) {
-        throw validationError('`mentions` must be a link: record:<object>/<id>, document:<id> or task:<id>', {
-          path: 'mentions',
-        });
+        throw validationError(
+          '`mentions` must be a link: record:<object>/<id>, document:<id>, task:<id> or asset:<id>',
+          {
+            path: 'mentions',
+          },
+        );
       }
 
       const indexed = indexedLinkOf(index, target);

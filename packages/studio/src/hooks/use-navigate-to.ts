@@ -4,7 +4,7 @@ import { useWorkspace } from '../providers/workspace';
 import { links } from '../router/links';
 import { useNavigation } from '../router/navigation';
 
-/** Where a record, a workflow, a document, a task, a member or an agent lives in the studio. */
+/** Where a record, a workflow, a document, a task, an asset, a member or an agent lives in the studio. */
 const hrefOfLink = (slug: string, target: LinkTarget): string =>
   target.kind === 'record'
     ? links.record(slug, target.object, target.id)
@@ -16,7 +16,9 @@ const hrefOfLink = (slug: string, target: LinkTarget): string =>
           ? links.task(slug, target.id)
           : target.kind === 'agent'
             ? links.agent(slug, target.id)
-            : links.settings(slug, 'members');
+            : target.kind === 'asset'
+              ? links.asset(slug, target.id)
+              : links.settings(slug, 'members');
 
 /** Workspace-aware navigation helpers built on the href builders in `router/links.ts`. */
 export const useNavigateTo = () => {

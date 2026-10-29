@@ -56,7 +56,10 @@ export type FieldDefinition = z.infer<typeof FieldDefinitionSchema>;
 export const ObjectDefinitionSchema = z
   .object({
     id: IdSchema,
-    nameSingular: ApiNameSchema.refine((name) => !RESERVED_OBJECT_NAMES.has(name), 'This object name is reserved'),
+    nameSingular: ApiNameSchema.refine(
+      (name) => !RESERVED_OBJECT_NAMES.has(name),
+      'This object name is reserved: the platform uses it for its own things. Pick another API name; the label can still be the same.',
+    ),
     namePlural: ApiNameSchema,
     labelSingular: z.string().min(1),
     labelPlural: z.string().min(1),

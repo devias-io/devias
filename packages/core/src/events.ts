@@ -105,6 +105,15 @@ export const DocumentChangedEventSchema = z.object({
 });
 export type DocumentChangedEvent = z.infer<typeof DocumentChangedEventSchema>;
 
+/** An asset (a stored file) was created, renamed or described, or removed. */
+export const AssetChangedEventSchema = z.object({
+  ...base,
+  type: z.literal('asset.changed'),
+  assetId: z.string(),
+  change: z.enum(['created', 'updated', 'deleted']),
+});
+export type AssetChangedEvent = z.infer<typeof AssetChangedEventSchema>;
+
 /**
  * A task was created, changed, commented on or removed. `changes` names what an update changed (`status`,
  * `assignee`, …); `cause` names the run of an agent that made it, so an agent's own writes can be told from a person's.
@@ -217,6 +226,7 @@ export const WorkspaceEventSchema = z
     WorkflowChangedEventSchema,
     WorkflowRunEventSchema,
     DocumentChangedEventSchema,
+    AssetChangedEventSchema,
     TaskChangedEventSchema,
     ModuleConnectionEventSchema,
     ModuleEventReceivedSchema,
@@ -235,6 +245,8 @@ export const isWorkflowEvent = (event: WorkspaceEvent): event is WorkflowChanged
 
 export const isDocumentEvent = (event: WorkspaceEvent): event is DocumentChangedEvent =>
   event.type === 'document.changed';
+
+export const isAssetEvent = (event: WorkspaceEvent): event is AssetChangedEvent => event.type === 'asset.changed';
 
 export const isTaskEvent = (event: WorkspaceEvent): event is TaskChangedEvent => event.type === 'task.changed';
 

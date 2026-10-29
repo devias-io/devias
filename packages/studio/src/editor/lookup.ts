@@ -1,5 +1,6 @@
 import {
   AGENT_MENTION,
+  ASSET_MENTION,
   type DeviasClient,
   DOCUMENT_MENTION,
   type LookupHit,
@@ -10,7 +11,8 @@ import {
 } from '@devias/core';
 
 /**
- * What `@` offers: records, then the workspace's members and agents, documents and tasks whose name or text matches, then (in a
+ * What `@` offers: records, then the workspace's members and agents, documents and tasks whose name or text matches, assets
+ * whose name or description matches, then (in a
  * message to the agent) workflows whose name matches. Whatever the person may not read is left out.
  */
 export const lookupEntities = async (
@@ -19,10 +21,11 @@ export const lookupEntities = async (
   options: { workflows?: boolean; members?: readonly Member[] } = {},
 ): Promise<LookupHit[]> => {
   const needle = text.trim().toLowerCase();
-  const [records, documents, tasks, agents, workflows] = await Promise.all([
+  const [records, documents, tasks, assets, agents, workflows] = await Promise.all([
     client.records.lookup({ text, limit: 8 }),
     client.documents.list({ search: text.trim(), limit: 3 }).catch(() => ({ items: [] })),
     client.tasks.list({ search: text.trim(), limit: 3 }).catch(() => ({ items: [] })),
+    client.assets.list({ search: text.trim(), limit: 3 }).catch(() => ({ items: [] })),
     client.ai.agents.list().catch(() => []),
     options.workflows ? client.workflows.list().catch(() => []) : Promise.resolve([]),
   ]);
@@ -42,6 +45,15 @@ export const lookupEntities = async (
       recordId: task.id,
       title: task.title,
       subtitle: 'Task',
+    }),
+  );
+  const assetHits = assets.items.map(
+    (asset): LookupHit => ({
+      object: ASSET_MENTION,
+      objectId: ASSET_MENTION,
+      recordId: asset.id,
+      title: asset.name,
+      subtitle: 'Asset',
     }),
   );
   const memberHits = (options.members ?? [])
@@ -83,5 +95,13 @@ export const lookupEntities = async (
       }),
     );
 
-  return [...records.slice(0, 6), ...memberHits, ...agentHits, ...documentHits, ...taskHits, ...workflowHits];
+  return [
+    ...records.slice(0, 6),
+    ...memberHits,
+    ...agentHits,
+    ...documentHits,
+    ...taskHits,
+    ...assetHits,
+    ...workflowHits,
+  ];
 };

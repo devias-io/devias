@@ -1,0 +1,2 @@
+ALTER TABLE "mention" DROP CONSTRAINT "mention_kind_check";--> statement-breakpoint
+ALTER TABLE "mention" ADD CONSTRAINT "mention_kind_check" CHECK ("mention"."kind" in ('record', 'document', 'task', 'asset'));

@@ -1,5 +1,6 @@
 import {
   type Actor,
+  type AssetChangedEvent,
   type DocumentChangedEvent,
   type TaskChangeAction,
   WORKFLOW_RUN_STATUSES,
@@ -36,14 +37,14 @@ export interface EventRow {
   /** metadata.changed: the entity kind. */
   entity?: string;
   /**
-   * metadata.changed: the entity's id; workflow.*, document.changed and task.changed: the workflow's, document's or task's id;
+   * metadata.changed: the entity's id; workflow.*, document.changed, asset.changed and task.changed: the workflow's, document's, asset's or task's id;
    * notification.changed: the notification's id (absent when every one of a person's was marked read);
    * module.connected / disconnected / connection.failed: the connection's id.
    */
   entityId?: string;
   version?: string;
   /**
-   * record.created and record.updated by an import: `{ importId }`; workflow.changed and document.changed: `{ action }`; task.changed: `{ action, changes?, status?, assignee?, runId? }`; workflow.run: `{ runId, status }`; module.connected and the other connection
+   * record.created and record.updated by an import: `{ importId }`; workflow.changed and document.changed: `{ action }`; asset.changed: `{ change }`; task.changed: `{ action, changes?, status?, assignee?, runId? }`; workflow.run: `{ runId, status }`; module.connected and the other connection
    * events: `{ providerId }`; module.event: `{ eventType, eventId }`; notification.changed: `{ recipientId, action }`.
    */
   payload?: Record<string, unknown>;
@@ -216,6 +217,16 @@ export const rowToEvent = (workspaceId: string, row: RawEventRow): WorkspaceEven
         type: 'document.changed',
         documentId: row.entity_id ?? '',
         action: (payload.action ?? 'updated') as DocumentChangedEvent['action'],
+      };
+    }
+    case 'asset.changed': {
+      const payload = row.payload === null ? {} : parseJson<{ change?: string }>(row.payload);
+
+      return {
+        ...base,
+        type: 'asset.changed',
+        assetId: row.entity_id ?? '',
+        change: (payload.change ?? 'updated') as AssetChangedEvent['change'],
       };
     }
     case 'task.changed': {

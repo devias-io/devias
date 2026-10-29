@@ -20,6 +20,7 @@ describe('links to records, workflows and documents', () => {
       { kind: 'task', id: 't1' },
       { kind: 'member', id: 'u1' },
       { kind: 'agent', id: 'a1' },
+      { kind: 'asset', id: 'f1' },
     ] as const;
 
     expect(targets.map(linkHref)).toEqual([
@@ -29,6 +30,7 @@ describe('links to records, workflows and documents', () => {
       'task:t1',
       'member:u1',
       'agent:a1',
+      'asset:f1',
     ]);
 
     for (const target of targets) {
@@ -55,6 +57,8 @@ describe('links to records, workflows and documents', () => {
     expect(linkOfMention('task', 't1')).toEqual({ kind: 'task', id: 't1' });
     expect(linkOfMention('member', 'u1')).toEqual({ kind: 'member', id: 'u1' });
     expect(linkOfMention('agent', 'a1')).toEqual({ kind: 'agent', id: 'a1' });
+    expect(linkOfMention('asset', 'f1')).toEqual({ kind: 'asset', id: 'f1' });
+    expect(mentionAttrsOf({ kind: 'asset', id: 'f1' }, 'Logo')).toEqual({ object: 'asset', id: 'f1', label: 'Logo' });
     expect(mentionAttrsOf({ kind: 'agent', id: 'a1' }, 'Sales')).toEqual({ object: 'agent', id: 'a1', label: 'Sales' });
     expect(mentionAttrsOf({ kind: 'member', id: 'u1' }, 'Ana')).toEqual({ object: 'member', id: 'u1', label: 'Ana' });
     expect(mentionAttrsOf({ kind: 'task', id: 't1' }, 'Call')).toEqual({ object: 'task', id: 't1', label: 'Call' });
@@ -105,7 +109,7 @@ describe('reserved object names', () => {
         ],
       });
 
-    for (const name of ['workflow', 'document', 'task', 'member', 'agent']) {
+    for (const name of ['workflow', 'document', 'task', 'member', 'agent', 'asset']) {
       expect(() => declare(name), name).toThrow(/reserved/);
     }
 

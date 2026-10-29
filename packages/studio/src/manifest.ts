@@ -3,7 +3,7 @@ import { ids } from './ids';
 
 /**
  * The studio itself as a module: it declares no workspace objects, but it is listed, installed and reasoned about like
- * every other module, so there is one concept. Core: part of every workspace, never uninstalled. Its top rows (Home, Tasks, Documents, Workflows, Agents, Skills) are
+ * every other module, so there is one concept. Core: part of every workspace, never uninstalled. Its top rows (Home, Tasks, Documents, Assets, Workflows, Agents, Skills) are
  * pinned nav items: above the sections whatever the workspace arranged, and not arranged in Settings.
  */
 export const manifest = defineModule({
@@ -17,6 +17,7 @@ export const manifest = defineModule({
     definePage({ id: ids.pages.home, label: 'Home', icon: 'house' }),
     definePage({ id: ids.pages.tasks, label: 'Tasks', icon: 'check-square' }),
     definePage({ id: ids.pages.documents, label: 'Documents', icon: 'file-text' }),
+    definePage({ id: ids.pages.assets, label: 'Assets', icon: 'folder' }),
     definePage({ id: ids.pages.workflows, label: 'Workflows', icon: 'workflow' }),
     definePage({ id: ids.pages.agents, label: 'Agents', icon: 'bot' }),
     definePage({ id: ids.pages.skills, label: 'Skills', icon: 'book-open' }),
@@ -44,6 +45,14 @@ export const manifest = defineModule({
       icon: 'file-text',
       target: { kind: 'page', pageId: ids.pages.documents },
       position: -25,
+      pinned: true,
+    }),
+    defineNavItem({
+      id: ids.nav.assets,
+      label: 'Assets',
+      icon: 'folder',
+      target: { kind: 'page', pageId: ids.pages.assets },
+      position: -22,
       pinned: true,
     }),
     defineNavItem({

@@ -4880,6 +4880,576 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/workspaces/{workspaceId}/assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List files
+         * @description Newest change first; page with `nextCursor`. `search` matches the name and the description, `type` keeps one kind of file (`image`, `pdf`, `text`, `other`), `createdBy` keeps what one person uploaded, `ids` picks some by id. Every file carries a `url` that opens it without credentials until it expires.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    search?: string;
+                    ids?: string;
+                    type?: "image" | "pdf" | "text" | "other";
+                    createdBy?: string;
+                    cursor?: string;
+                    limit?: number;
+                };
+                header?: never;
+                path: {
+                    /** @description Workspace (organization) id */
+                    workspaceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description A page of files */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AssetPage"];
+                    };
+                };
+                /** @description Validation error or invalid cursor */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not authenticated */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not allowed */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Upload a file
+         * @description The body is the file itself (not a form), its name goes in `name`. The type is detected from the bytes, never taken from the request. Refused with `VALIDATION`, storing nothing, when it is over the limit (`FILE_MAX_BYTES`, 25 MB by default) or the workspace is out of storage. Not an action: an upload is bytes, so agents create files with `create_asset_from_text`.
+         */
+        post: {
+            parameters: {
+                query: {
+                    name: string;
+                    description?: string;
+                };
+                header?: never;
+                path: {
+                    /** @description Workspace (organization) id */
+                    workspaceId: string;
+                };
+                cookie?: never;
+            };
+            /** @description The file */
+            requestBody: {
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+            responses: {
+                /** @description Stored */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Asset"];
+                    };
+                };
+                /** @description Validation error or invalid cursor */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not authenticated */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not allowed */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspaceId}/assets/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a file
+         * @description The file’s details, not its bytes: those are at the `url` it carries (`GET /files/{id}`).
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Workspace (organization) id */
+                    workspaceId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The file */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Asset"];
+                    };
+                };
+                /** @description Not authenticated */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not allowed */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /**
+         * Delete a file
+         * @description Removes the content for good. A file that is in use is refused with `CONFLICT` and where it is used; `force=true` deletes it anyway and the places that used it read "file removed".
+         */
+        delete: {
+            parameters: {
+                query?: {
+                    force?: boolean | ("true" | "false");
+                };
+                header?: never;
+                path: {
+                    /** @description Workspace (organization) id */
+                    workspaceId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not authenticated */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not allowed */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Update a file
+         * @description Sends only what changes: the `name` and the `description`. The bytes of a file never change. With `expectedVersion`, a file that changed since is a `CONFLICT`; without it the change overwrites.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Workspace (organization) id */
+                    workspaceId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Request body */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AssetPatch"];
+                };
+            };
+            responses: {
+                /** @description Updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Asset"];
+                    };
+                };
+                /** @description Validation error or invalid cursor */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not authenticated */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not allowed */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/workspaces/{workspaceId}/assets/{id}/link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Share a file with a link
+         * @description A link that opens the file without credentials until it expires: `ttlSeconds` (default 10 minutes, at most 7 days). Anyone who holds it can read the file.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Workspace (organization) id */
+                    workspaceId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Request body */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AssetLinkInput"];
+                };
+            };
+            responses: {
+                /** @description The link */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AssetLink"];
+                    };
+                };
+                /** @description Validation error or invalid cursor */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not authenticated */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not allowed */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspaceId}/assets/{id}/usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Where a file is used
+         * @description The records that hold the file in a `file` field and the documents, tasks and comments that link to it.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Workspace (organization) id */
+                    workspaceId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Where the file is used */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AssetUsage"];
+                    };
+                };
+                /** @description Not authenticated */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not allowed */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspaceId}/asset-usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * How much storage the files take
+         * @description The number of files, the bytes they take and the most the workspace may store (`null` while unlimited).
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Workspace (organization) id */
+                    workspaceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description What the files take */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AssetsUsage"];
+                    };
+                };
+                /** @description Not authenticated */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not allowed */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspaceId}/tasks": {
         parameters: {
             query?: never;
@@ -9646,6 +10216,99 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/files/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download a file
+         * @description The bytes of a file, with no credentials: every client, a browser `<img>` or an api key, reads a file the same way. A public file (an account picture, a workspace logo) needs nothing but its link, which never changes. A private file needs a signed link the server made (the `url` every asset carries, or a link a person asked for) and opens until it expires. Pictures and PDFs are shown in place and everything else is offered as a download, whatever the name; `download=true` always offers a download. `ETag` is the file’s SHA-256 and `Range` is honoured. `404` once the file is deleted; `403` for a private file without a valid link: one that has expired, was changed or has no signature.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description A smaller WebP of a picture, this many pixels wide (one of 64, 128, 256, 512, 1024, 2048). Made on the first request and kept; anything that cannot be resized (an animated or very large picture, an SVG, no image library on the server) is served as it is. */
+                    w?: number;
+                    /** @description With `w`: `inside` (the default) fits the picture in a square of that side without enlarging it, `cover` fills the square and crops. */
+                    fit?: "inside" | "cover";
+                    /** @description true offers the file as a download instead of showing it in the page */
+                    download?: "true" | "false";
+                    /** @description When the link expires, in Unix seconds. Not needed for a public file. */
+                    exp?: string;
+                    /** @description The signature of the link. Not needed for a public file. */
+                    sig?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The file */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/octet-stream": string;
+                    };
+                };
+                /** @description The part of the file asked for */
+                206: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/octet-stream": string;
+                    };
+                };
+                /** @description Unchanged since the ETag the request sent */
+                304: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not allowed */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description The range lies outside the file */
+                416: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/modules/{moduleId}/logo": {
         parameters: {
             query?: never;
@@ -10398,6 +11061,16 @@ export interface components {
             documentId: string;
             /** @enum {string} */
             action: "created" | "updated" | "commented" | "deleted";
+        } | {
+            sequence: number;
+            workspaceId: string;
+            actor: components["schemas"]["Actor"];
+            occurredAt: string;
+            /** @enum {string} */
+            type: "asset.changed";
+            assetId: string;
+            /** @enum {string} */
+            change: "created" | "updated" | "deleted";
         } | {
             sequence: number;
             workspaceId: string;
@@ -11661,6 +12334,59 @@ export interface components {
             markdown?: string;
             resolved?: boolean;
         };
+        AssetPage: {
+            items: components["schemas"]["Asset"][];
+            nextCursor: string | null;
+            total: number;
+        };
+        Asset: {
+            id: string;
+            name: string;
+            description: string;
+            contentType: string;
+            size: number;
+            checksum: string;
+            width: number | null;
+            height: number | null;
+            version: number;
+            createdBy: components["schemas"]["Actor"];
+            updatedBy: components["schemas"]["Actor"];
+            createdAt: string;
+            updatedAt: string;
+            url: string;
+        };
+        AssetPatch: {
+            name?: string;
+            description?: string;
+            expectedVersion?: number;
+        };
+        AssetLink: {
+            url: string;
+            expiresAt: string;
+        };
+        AssetLinkInput: {
+            ttlSeconds?: number;
+        };
+        AssetUsage: {
+            records: {
+                object: string;
+                field: string;
+                recordId: string;
+            }[];
+            mentions: {
+                /** @enum {string} */
+                kind: "document" | "task" | "comment";
+                id: string;
+                /** @enum {string} */
+                role: "mention" | "about";
+            }[];
+            total: number;
+        };
+        AssetsUsage: {
+            count: number;
+            bytes: number;
+            quotaBytes: number | null;
+        };
         TaskPage: {
             items: components["schemas"]["TaskSummary"][];
             nextCursor: string | null;
@@ -12599,7 +13325,7 @@ export interface components {
             name: string;
             description: string;
             /** @enum {string} */
-            area: "records" | "model" | "workflows" | "documents" | "tasks" | "modules" | "actions" | "people" | "notifications" | "agents" | "skills" | "interface" | "conversation";
+            area: "records" | "model" | "workflows" | "documents" | "assets" | "tasks" | "modules" | "actions" | "people" | "notifications" | "agents" | "skills" | "interface" | "conversation";
             readOnly: boolean;
             escalates: boolean;
             approval: components["schemas"]["ApprovalMode"];

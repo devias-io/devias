@@ -602,6 +602,25 @@ export const createAiService = (options: AiServiceOptions): AiService => {
             };
           }
 
+          if (target.kind === 'asset') {
+            const asset = await engine.assets.get(ctx, target.id).catch(() => null);
+
+            // What the model may know of a file: never its link, which is a key to the bytes.
+            return {
+              target,
+              record: asset
+                ? {
+                    title: asset.name,
+                    contentType: asset.contentType,
+                    size: asset.size,
+                    description: asset.description,
+                    version: asset.version,
+                    updatedAt: asset.updatedAt,
+                  }
+                : null,
+            };
+          }
+
           if (target.kind === 'document') {
             const document = await engine.documents.get(ctx, target.id).catch(() => null);
 

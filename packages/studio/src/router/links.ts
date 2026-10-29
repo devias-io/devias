@@ -31,6 +31,9 @@ export const links = {
   skills: (slug: string) => `/workspaces/${seg(slug)}/skills`,
   /** A skill's page: by id, or a new one. */
   skill: (slug: string, id?: string) => `/workspaces/${seg(slug)}/skills/${id ? seg(id) : 'new'}`,
+  assets: (slug: string) => `/workspaces/${seg(slug)}/assets`,
+  /** The assets page with one asset open. */
+  asset: (slug: string, id: string) => `/workspaces/${seg(slug)}/assets?asset=${encodeURIComponent(id)}`,
   documents: (slug: string) => `/workspaces/${seg(slug)}/documents`,
   document: (slug: string, id: string) => `/workspaces/${seg(slug)}/documents/${seg(id)}`,
   tasks: (slug: string) => `/workspaces/${seg(slug)}/tasks`,

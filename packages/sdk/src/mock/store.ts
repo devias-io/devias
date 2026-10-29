@@ -1,6 +1,7 @@
 import {
   type ActivityEntry,
   type Actor,
+  type Asset,
   type CommandItem,
   type Connection,
   type Document,
@@ -60,6 +61,12 @@ export interface MockRecordComment extends RecordComment {
 
 /** A document. Removed documents stay (ids stay unique) but drop out of every read. */
 export interface MockDocument extends Omit<Document, 'markdown'> {
+  deleted?: boolean;
+}
+
+/** A file, with its bytes. Removed files stay (ids stay unique) but drop out of every read. Bytes are not part of snapshots. */
+export interface MockAsset extends Omit<Asset, 'url'> {
+  bytes: Uint8Array;
   deleted?: boolean;
 }
 
@@ -171,6 +178,8 @@ export class MockStore {
   documentActivity: DocumentActivityEntry[] = [];
   /** Every comment on every document, in the order they were written; removed ones stay out of every read. */
   documentComments: MockDocumentComment[] = [];
+  /** Every file, in the order they were made; the mock keeps their bytes in memory only. */
+  assets: MockAsset[] = [];
   /** Every task, in the order they were made, and the timelines of all of them, oldest first. */
   tasks: MockTask[] = [];
   taskActivity: TaskActivityEntry[] = [];
@@ -496,6 +505,7 @@ export class MockStore {
     this.documents = [];
     this.documentActivity = [];
     this.documentComments = [];
+    this.assets = [];
     this.tasks = [];
     this.taskActivity = [];
     this.touch();

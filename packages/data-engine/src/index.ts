@@ -1,11 +1,19 @@
-import type { ModuleManifest } from '@devias/core';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { FILE_MAX_BYTES_DEFAULT, type ModuleManifest } from '@devias/core';
 import { type ActivityService, createActivityService } from './activity/service';
+import { type AssetService, createAssetService } from './assets/service';
 import type { DataSource } from './datasource/interface';
 import { createPostgresJsonbDataSource } from './datasource/postgres-jsonb';
 import type { Db } from './db/exec';
 import { createDocumentService, type DocumentService } from './documents/service';
 import { createLocalBus, type EventBus } from './events/bus';
 import { createEventService, type EventService } from './events/service';
+import type { ImageProcessor } from './files/images';
+import { createLocalFileStore } from './files/local-store';
+import { createFileService, type FileService } from './files/service';
+import type { FileStore } from './files/store';
+import { createFileUrlSigner, DEV_FILE_URL_SECRET, type FileUrlSigner } from './files/urls';
 import { consoleLogger, type Logger } from './logger';
 import { createMetadataService, type MetadataService } from './metadata/service';
 import { SnapshotCache } from './metadata/snapshot';
@@ -37,6 +45,18 @@ export interface DataEngineOptions {
    * tests simple but protects nothing; the server always passes one.
    */
   encryptionKey?: string;
+  /** Where the bytes of files live. Without it they go to a folder under the system's temporary directory: fine for tests, lost on reboot. */
+  fileStore?: FileStore;
+  /** Makes and checks the links that open a file without credentials. Without it a fixed development key signs them. */
+  fileUrls?: FileUrlSigner;
+  /** The largest file in bytes; default 25 MB. */
+  fileMaxBytes?: number;
+  /** The most one workspace may store in bytes; unlimited by default. */
+  fileQuotaBytes?: number;
+  /** How old an object without a row must be, in milliseconds, before the sweeper removes it; default one hour. */
+  fileSweepGraceMs?: number;
+  /** The image library: the size of pictures at upload and thumbnails on demand. Without it pictures are stored and served as they are. */
+  imageProcessor?: ImageProcessor;
 }
 
 /** The key used when none is configured: fine for tests and the mock, never for real secrets. */
@@ -55,6 +75,10 @@ export interface DataEngine {
   documents: DocumentService;
   /** Tasks: work handed between people and agents, in tables of their own. */
   tasks: TaskService;
+  /** Files: stored bytes, under assets and under what belongs to no library (a picture). It decides nobody's access. */
+  files: FileService;
+  /** Assets: a workspace's library of files, what people and agents manage and link to. */
+  assets: AssetService;
   metadata: MetadataService;
   modules: ModuleService;
   events: EventService;
@@ -90,6 +114,19 @@ export const createDataEngine = (options: DataEngineOptions): DataEngine => {
   const comments = createRecordCommentService({ db, metadata, dataSource, bus, clock });
   const documents = createDocumentService({ db, metadata, bus, clock });
   const tasks = createTaskService({ db, metadata, bus, clock });
+  const fileUrls = options.fileUrls ?? createFileUrlSigner({ secret: DEV_FILE_URL_SECRET, clock });
+  const files = createFileService({
+    db,
+    clock,
+    logger,
+    store: options.fileStore ?? createLocalFileStore(join(tmpdir(), `devias-files-${process.pid}`)),
+    urls: fileUrls,
+    maxBytes: options.fileMaxBytes ?? FILE_MAX_BYTES_DEFAULT,
+    quotaBytes: options.fileQuotaBytes ?? null,
+    sweepGraceMs: options.fileSweepGraceMs ?? 60 * 60 * 1000,
+    ...(options.imageProcessor ? { images: options.imageProcessor } : {}),
+  });
+  const assets = createAssetService({ db, bus, clock, files, urls: fileUrls });
   const modules = createModuleService({ db, cache, store, dataSource, bus, clock, logger });
   const events = createEventService(db, bus);
   const connections = createConnectionsService({
@@ -114,6 +151,7 @@ export const createDataEngine = (options: DataEngineOptions): DataEngine => {
     cache,
     dataSource,
     logger,
+    purgeFiles: (workspaceId) => files.purgeWorkspace(workspaceId),
     seedManifests: options.seedManifests ?? [],
     apply: (ctx, manifest, opts) => modules.apply(ctx, manifest, opts),
   });
@@ -127,6 +165,8 @@ export const createDataEngine = (options: DataEngineOptions): DataEngine => {
     comments,
     documents,
     tasks,
+    files,
+    assets,
     metadata,
     modules,
     events,
@@ -144,6 +184,7 @@ export const createDataEngine = (options: DataEngineOptions): DataEngine => {
 
 export * from './actions';
 export type { ActivityService } from './activity/service';
+export type { AssetCreateInput, AssetService } from './assets/service';
 export * from './context';
 export * from './datasource/interface';
 export {
@@ -175,6 +216,19 @@ export {
   writeEvents,
 } from './events/feed';
 export type { EventService } from './events/service';
+export type { ImageInfo, ImageProcessor } from './files/images';
+export * from './files/local-store';
+export type {
+  FileFacts,
+  FileOwner,
+  FileService,
+  FileSweepResult,
+  FileUsage,
+  OpenedFile,
+  WrittenFile,
+} from './files/service';
+export * from './files/store';
+export * from './files/urls';
 export * from './logger';
 export { buildRecordSchemas, RecordSchemaCache, type RecordSchemas } from './metadata/record-schema';
 export type { MetadataCrudService, MetadataService } from './metadata/service';

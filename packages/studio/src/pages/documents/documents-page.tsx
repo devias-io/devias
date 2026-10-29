@@ -1,7 +1,8 @@
 import { Button, EmptyState, Icon, Page, PageHeader, Skeleton } from '@devias/ui';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { SearchInput } from '../../components/search-input';
 import { useDocuments, useNewDocument } from '../../hooks/use-documents';
+import { useEndlessScroll } from '../../hooks/use-endless-scroll';
 import { useWorkspace } from '../../providers/workspace';
 import { links } from '../../router/links';
 import { useNavigation } from '../../router/navigation';
@@ -17,24 +18,7 @@ export function DocumentsPage() {
   const [search, setSearch] = useState('');
   const query = useDocuments(search ? { search } : {});
   const documents = query.data?.pages.flatMap((page) => page.items) ?? [];
-  const sentinel = useRef<HTMLDivElement>(null);
-  const { hasNextPage, isFetchingNextPage, fetchNextPage } = query;
-  useEffect(() => {
-    const target = sentinel.current;
-
-    if (!target || !hasNextPage || typeof IntersectionObserver === 'undefined') {
-      return;
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting) && !isFetchingNextPage) {
-        void fetchNextPage();
-      }
-    });
-    observer.observe(target);
-
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const sentinel = useEndlessScroll(query);
 
   return (
     <Page fullBleed>
@@ -82,7 +66,7 @@ export function DocumentsPage() {
               />
             ))}
           </div>
-          {hasNextPage ? <div ref={sentinel} className="h-8" /> : null}
+          {query.hasNextPage ? <div ref={sentinel} className="h-8" /> : null}
         </div>
       )}
     </Page>

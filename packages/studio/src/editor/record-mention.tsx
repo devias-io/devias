@@ -1,4 +1,11 @@
-import { DOCUMENT_MENTION, type LinkTarget, type LookupHit, linkOfMention, TASK_MENTION } from '@devias/core';
+import {
+  ASSET_MENTION,
+  DOCUMENT_MENTION,
+  type LinkTarget,
+  type LookupHit,
+  linkOfMention,
+  TASK_MENTION,
+} from '@devias/core';
 import { Icon, type IconName } from '@devias/ui';
 import { Mention, type MentionNodeAttrs } from '@tiptap/extension-mention';
 import { PluginKey } from '@tiptap/pm/state';
@@ -16,7 +23,7 @@ import { type MenuKeys, renderSuggestion, SuggestionMenu } from './suggestion-me
 
 type MentionAttrs = MentionNodeAttrs & { object?: string | null };
 
-/** The icon of what a mention points at: its object's, a workflow's, a document's, a task's, a member's or an agent's. */
+/** The icon of what a mention points at: its object's, a workflow's, a document's, a task's, an asset's, a member's or an agent's. */
 const iconOf = (target: LinkTarget, objectIcon: (object: string) => IconName | undefined): IconName =>
   target.kind === 'workflow'
     ? 'workflow'
@@ -28,7 +35,9 @@ const iconOf = (target: LinkTarget, objectIcon: (object: string) => IconName | u
           ? 'user'
           : target.kind === 'agent'
             ? 'bot'
-            : (objectIcon(target.object) ?? 'file');
+            : target.kind === 'asset'
+              ? 'file'
+              : (objectIcon(target.object) ?? 'file');
 
 /** A mention inside a document: an inline link to the record, workflow or document that shows its current label. */
 function MentionChip({ node }: ReactNodeViewProps) {
@@ -46,13 +55,18 @@ function MentionChip({ node }: ReactNodeViewProps) {
         ? DOCUMENT_MENTION
         : target?.kind === 'task'
           ? TASK_MENTION
-          : undefined,
+          : target?.kind === 'asset'
+            ? ASSET_MENTION
+            : undefined,
     [id],
   );
   // A member's name is the workspace's to say, not a query away; what the mention saved stands in for a former member.
   const memberName = target?.kind === 'member' ? members.find((member) => member.userId === id)?.user.name : undefined;
   const agentName = target?.kind === 'agent' ? agentNames.get(id ?? '') : undefined;
-  const text = memberName ?? agentName ?? labels.labels[id ?? ''] ?? label ?? id ?? '';
+  // An asset with no name to give (the resolver answers with the id) was deleted: the mention says so instead of keeping the
+  // name it was made with.
+  const removed = target?.kind === 'asset' && !labels.isLoading && labels.labels[id ?? ''] === id;
+  const text = removed ? 'File removed' : (memberName ?? agentName ?? labels.labels[id ?? ''] ?? label ?? id ?? '');
 
   if (!target) {
     return <NodeViewWrapper as="span">@{text}</NodeViewWrapper>;
@@ -69,7 +83,11 @@ function MentionChip({ node }: ReactNodeViewProps) {
           name={iconOf(target, (name) => index.objectsByName.get(name)?.icon)}
           className="size-3.5 self-center text-muted-foreground"
         />
-        <span className="underline decoration-border underline-offset-[3px]">{text}</span>
+        <span
+          className={`underline decoration-border underline-offset-[3px] ${removed ? 'text-muted-foreground line-through' : ''}`}
+        >
+          {text}
+        </span>
       </navigation.Link>
     </NodeViewWrapper>
   );

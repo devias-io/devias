@@ -4,6 +4,11 @@ import type {
   AggregateResult,
   ApplyOptions,
   ApplyResult,
+  Asset,
+  AssetLink,
+  AssetPage,
+  AssetsUsage,
+  AssetUsage,
   CommandItem,
   CommandItemInput,
   Connection,
@@ -81,6 +86,7 @@ import type {
   WorkspaceSchema,
 } from '@devias/core';
 import { createAiApi } from './ai';
+import { uploadAsset } from './assets';
 import { createHttpClient, type HttpClient } from './http';
 import { subscribeEvents } from './sse';
 import type { ClientOptions, MeResponse, WorkspaceApi, WorkspaceApiOptions, WorkspaceSummary } from './types';
@@ -244,6 +250,26 @@ export const createClient = (options: ClientOptions): HttpDeviasClient => {
       delete: async (id) => {
         await http.delete(`${ws}/documents/${enc(id)}`);
       },
+    },
+    assets: {
+      list: (query) =>
+        http.get<AssetPage>(`${ws}/assets`, {
+          search: query?.search,
+          ids: query?.ids,
+          type: query?.type,
+          createdBy: query?.createdBy,
+          cursor: query?.cursor,
+          limit: query?.limit,
+        }),
+      get: (id) => http.get<Asset>(`${ws}/assets/${enc(id)}`),
+      upload: (input, options) => uploadAsset<Asset>(http, `${ws}/assets`, input, options),
+      update: (id, patch) => http.patch<Asset>(`${ws}/assets/${enc(id)}`, patch),
+      delete: async (id, options) => {
+        await http.delete(`${ws}/assets/${enc(id)}`, options?.force ? { query: { force: true } } : {});
+      },
+      link: (id, input) => http.post<AssetLink>(`${ws}/assets/${enc(id)}/link`, input ?? {}),
+      usage: (id) => http.get<AssetUsage>(`${ws}/assets/${enc(id)}/usage`),
+      workspaceUsage: () => http.get<AssetsUsage>(`${ws}/asset-usage`),
     },
     tasks: {
       list: (query?: TaskQuery) =>

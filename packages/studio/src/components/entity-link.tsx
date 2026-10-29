@@ -1,4 +1,11 @@
-import { DOCUMENT_MENTION, type LinkTarget, mentionObjectOf, parseLink, TASK_MENTION } from '@devias/core';
+import {
+  ASSET_MENTION,
+  DOCUMENT_MENTION,
+  type LinkTarget,
+  mentionObjectOf,
+  parseLink,
+  TASK_MENTION,
+} from '@devias/core';
 import { cn, Icon, type IconName } from '@devias/ui';
 import { useNavigateTo } from '../hooks/use-navigate-to';
 import { useRelatedLabels } from '../hooks/use-related-labels';
@@ -16,9 +23,11 @@ const iconOf = (target: LinkTarget, objectIcon: string | undefined): IconName =>
           ? 'workflow'
           : target.kind === 'agent'
             ? 'bot'
-            : 'user';
+            : target.kind === 'asset'
+              ? 'file'
+              : 'user';
 
-/** A record, a document or a task as a small link with its icon and its current title: `record:company/<id>`. */
+/** A record, a document, a task or an asset as a small link with its icon and its current title: `record:company/<id>`. */
 export function EntityLink({ link, className }: { link: string; className?: string }) {
   const target = parseLink(link);
   const nav = useNavigateTo();
@@ -31,7 +40,9 @@ export function EntityLink({ link, className }: { link: string; className?: stri
         ? DOCUMENT_MENTION
         : target?.kind === 'task'
           ? TASK_MENTION
-          : undefined;
+          : target?.kind === 'asset'
+            ? ASSET_MENTION
+            : undefined;
   const labels = useRelatedLabels(labelObject, [target?.id]);
 
   if (!target) {
@@ -39,7 +50,9 @@ export function EntityLink({ link, className }: { link: string; className?: stri
   }
 
   const object = target.kind === 'record' ? index.objectsByName.get(target.object) : undefined;
-  const text = labels.get(target.id) || mentionObjectOf(target);
+  // An asset with no name to give (the resolver answers with the id) was deleted: what links to it says so.
+  const removed = target.kind === 'asset' && !labels.isLoading && labels.labels[target.id] === target.id;
+  const text = removed ? 'File removed' : labels.get(target.id) || mentionObjectOf(target);
 
   return (
     <navigation.Link
@@ -47,6 +60,7 @@ export function EntityLink({ link, className }: { link: string; className?: stri
       title={`Open ${text}`}
       className={cn(
         'inline-flex max-w-full items-center gap-1.5 rounded-md bg-muted/60 px-2 py-1 text-xs font-medium transition-colors hover:bg-muted',
+        removed && 'text-muted-foreground line-through',
         className,
       )}
     >

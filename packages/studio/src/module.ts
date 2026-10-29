@@ -9,6 +9,7 @@ import { ids } from './ids';
 import { manifest } from './manifest';
 import { agentsPages } from './pages/agents';
 import { agentApprovalBlock } from './pages/agents/agent-approval';
+import { assetsPages } from './pages/assets';
 import { documentsPages } from './pages/documents';
 import { homePage } from './pages/home';
 import { gettingStartedBlock } from './pages/home/blocks/getting-started';
@@ -72,6 +73,7 @@ export const studio = defineModuleStudio(manifest, {
     ...recordsPages,
     ...tasksPages,
     ...documentsPages,
+    ...assetsPages,
     ...workflowsPages,
     ...agentsPages,
     ...skillsPages,

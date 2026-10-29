@@ -2,6 +2,11 @@ import type {
   Actor,
   AggregateQuery,
   AggregateResult,
+  Asset,
+  AssetLink,
+  AssetPage,
+  AssetPatch,
+  AssetQuery,
   Document,
   DocumentAppend,
   DocumentInput,
@@ -26,6 +31,7 @@ import type {
   TaskQuery,
   WorkspaceSchema,
 } from '@devias/core';
+import type { AssetCreateInput } from './assets/service';
 import type { EngineContext } from './context';
 import type { DataEngine } from './index';
 
@@ -57,6 +63,16 @@ export interface ScopedEngine {
     update(id: string, patch: DocumentPatch): Promise<Document>;
     append(id: string, input: DocumentAppend): Promise<Document>;
     delete(id: string): Promise<void>;
+  };
+  assets: {
+    list(query?: AssetQuery): Promise<AssetPage>;
+    get(id: string): Promise<Asset>;
+    /** Stores a file from bytes, a stream or text; its type is detected from the bytes. */
+    create(input: AssetCreateInput): Promise<Asset>;
+    update(id: string, patch: AssetPatch): Promise<Asset>;
+    delete(id: string, options?: { force?: boolean }): Promise<void>;
+    /** A link that opens the file without credentials, for 10 minutes unless `ttlSeconds` says otherwise. */
+    link(id: string, ttlSeconds?: number): Promise<AssetLink>;
   };
   tasks: {
     list(query?: TaskQuery): Promise<TaskPage>;
@@ -94,6 +110,14 @@ export const scopeEngine = (engine: DataEngine, ctx: EngineContext): ScopedEngin
     update: (id, patch) => engine.documents.update(ctx, id, patch),
     append: (id, input) => engine.documents.append(ctx, id, input),
     delete: (id) => engine.documents.delete(ctx, id),
+  },
+  assets: {
+    list: (query) => engine.assets.list(ctx, query),
+    get: (id) => engine.assets.get(ctx, id),
+    create: (input) => engine.assets.create(ctx, input),
+    update: (id, patch) => engine.assets.update(ctx, id, patch),
+    delete: (id, options) => engine.assets.delete(ctx, id, options),
+    link: (id, ttlSeconds) => engine.assets.link(ctx, id, ttlSeconds === undefined ? {} : { ttlSeconds }),
   },
   tasks: {
     list: (query) => engine.tasks.list(ctx, query),

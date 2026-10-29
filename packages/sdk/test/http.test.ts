@@ -284,3 +284,63 @@ describe('createWorkspaceApi', () => {
     expect(client.modules.logoUrl('a b')).toBe('http://localhost:3000/api/modules/a%20b/logo');
   });
 });
+
+describe('createClient assets', () => {
+  const asset = { id: 'a1', name: 'logo.png', url: 'http://localhost:3000/files/a1?exp=1&sig=x' };
+
+  it('uploads the raw body under its name and maps errors', async () => {
+    const { fetch, calls } = stub(() => json(asset, { status: 201 }));
+    const client = createClient({ baseUrl: 'http://localhost:3000', workspaceId: 'ws 1', apiKey: 'k', fetch });
+    const bytes = new Uint8Array([1, 2, 3]);
+
+    await expect(
+      client.assets.upload({ name: 'my logo.png', description: 'Ours', body: bytes }, { onProgress: () => {} }),
+    ).resolves.toEqual(asset);
+    expect(calls[0]?.url).toBe('http://localhost:3000/api/workspaces/ws%201/assets?name=my+logo.png&description=Ours');
+    expect(calls[0]?.init?.method).toBe('POST');
+    expect(headersOf(calls[0])).toMatchObject({ 'content-type': 'application/octet-stream', 'x-api-key': 'k' });
+    expect(calls[0]?.init?.body).toBeInstanceOf(Blob);
+    expect(calls[0]?.init?.credentials).toBe('include');
+
+    const refusing = stub(() =>
+      json({ error: { code: 'VALIDATION', message: 'A file may be at most 25 MB' } }, { status: 400 }),
+    );
+    const refused = createClient({ baseUrl: 'http://localhost:3000', workspaceId: 'ws', fetch: refusing.fetch });
+    expect(await expectError(refused.assets.upload({ name: 'big.bin', body: 'x' }))).toMatchObject({
+      status: 400,
+      code: 'VALIDATION',
+    });
+  });
+
+  it('calls the routes of the other operations', async () => {
+    const { fetch, calls } = stub((call) =>
+      call.init?.method === 'DELETE' ? new Response(null, { status: 204 }) : json({}),
+    );
+    const client = createClient({ baseUrl: 'http://localhost:3000', workspaceId: 'ws', fetch });
+    await client.assets.list({ search: 'logo', type: 'image', limit: 5 });
+    await client.assets.get('a/1');
+    await client.assets.update('a1', { name: 'x.png' });
+    await client.assets.delete('a1');
+    await client.assets.delete('a1', { force: true });
+    await client.assets.link('a1', { ttlSeconds: 3600 });
+    await client.assets.link('a1');
+    await client.assets.usage('a1');
+    await client.assets.workspaceUsage();
+
+    expect(
+      calls.map((call) => `${call.init?.method} ${call.url.replace('http://localhost:3000/api/workspaces/ws', '')}`),
+    ).toEqual([
+      'GET /assets?search=logo&type=image&limit=5',
+      'GET /assets/a%2F1',
+      'PATCH /assets/a1',
+      'DELETE /assets/a1',
+      'DELETE /assets/a1?force=true',
+      'POST /assets/a1/link',
+      'POST /assets/a1/link',
+      'GET /assets/a1/usage',
+      'GET /asset-usage',
+    ]);
+    expect(bodyOf(calls[5])).toEqual({ ttlSeconds: 3600 });
+    expect(bodyOf(calls[6])).toEqual({});
+  });
+});

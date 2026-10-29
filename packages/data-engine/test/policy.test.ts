@@ -47,6 +47,8 @@ describe('permission policy', () => {
       'workflow.run',
       'document.read',
       'document.write',
+      'asset.read',
+      'asset.write',
       'task.read',
       'task.write',
       'task.control',
@@ -73,6 +75,9 @@ describe('permission policy', () => {
     // Documents need their own grant: the default key reads records only.
     expect(allowed(apiKey({ document: ['read'] }))).toEqual(['document.read']);
     expect(allowed(apiKey({ document: ['*'] }))).toEqual(['document.read', 'document.write']);
+    // So do files.
+    expect(allowed(apiKey({ asset: ['read'] }))).toEqual(['asset.read']);
+    expect(allowed(apiKey({ asset: ['*'] }))).toEqual(['asset.read', 'asset.write']);
     expect(allowed(apiKey({ task: ['read'] }))).toEqual(['task.read']);
     expect(allowed(apiKey({ task: ['*'] }))).toEqual(['task.read', 'task.write', 'task.control']);
     expect(allowed(apiKey({ task: ['control'] }))).toEqual(['task.control']);

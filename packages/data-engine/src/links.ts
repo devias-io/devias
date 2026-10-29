@@ -2,10 +2,10 @@ import { linkOfMention, mentionsOf, objectByKey, type RichTextDoc, type SchemaIn
 import { sql } from 'drizzle-orm';
 import { type Db, runRaw } from './db/exec';
 
-/** What a stored text mentions that an index keeps: records (by their object's id), documents and tasks. */
+/** What a stored text mentions that an index keeps: records (by their object's id), documents, tasks and assets. */
 export interface IndexedLink {
-  kind: 'record' | 'document' | 'task';
-  /** The record's object id; empty for documents and tasks. */
+  kind: 'record' | 'document' | 'task' | 'asset';
+  /** The record's object id; empty for the rest. */
   objectId: string;
   targetId: string;
 }
@@ -49,7 +49,7 @@ export const indexedLinkOf = (index: SchemaIndex, target: ReturnType<typeof link
   if (target.kind === 'workflow' || target.kind === 'member' || target.kind === 'agent') {
     const what = target.kind === 'member' ? 'Members' : target.kind === 'agent' ? 'Agents' : 'Workflows';
 
-    return { problem: `${what} are not indexed: use a record, a document or a task` };
+    return { problem: `${what} are not indexed: use a record, a document, a task or an asset` };
   }
 
   if (!UUID.test(target.id)) {
@@ -67,7 +67,7 @@ export const indexedLinkOf = (index: SchemaIndex, target: ReturnType<typeof link
   return { link: { kind: target.kind, objectId: '', targetId: target.id } };
 };
 
-/** `text` of a stored link back as the entity link a person reads: `record:person/<id>`, `document:<id>`, `task:<id>`. */
+/** `text` of a stored link back as the entity link a person reads: `record:person/<id>`, `document:<id>`, `task:<id>`, `asset:<id>`. */
 export const linkTextOf = (index: SchemaIndex, link: IndexedLink): string => {
   if (link.kind === 'record') {
     const object = index.objectsById.get(link.objectId);

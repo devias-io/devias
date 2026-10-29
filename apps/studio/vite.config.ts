@@ -21,6 +21,8 @@ export default defineConfig({
     port: 5173,
     strictPort: false,
     proxy: {
+      // Files are read at `/files/{id}`, outside the API.
+      '/files': { target: apiUrl, changeOrigin: false },
       '/api': {
         target: apiUrl,
         changeOrigin: false,

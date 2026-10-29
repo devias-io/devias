@@ -9,6 +9,7 @@ export * from './connections';
 export * from './data-model';
 export * from './documents';
 export * from './events';
+export * from './files';
 export * from './interface';
 export * from './kv';
 export * from './mentions';

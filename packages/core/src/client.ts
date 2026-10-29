@@ -2,6 +2,16 @@ import type { ImportBody, ImportReport } from './actions/records';
 import type { ActivityPage, ActivityQuery } from './activity';
 import type { AiClient } from './ai';
 import type {
+  Asset,
+  AssetLink,
+  AssetLinkInput,
+  AssetPage,
+  AssetPatch,
+  AssetQuery,
+  AssetsUsage,
+  AssetUsage,
+} from './asset';
+import type {
   Document,
   DocumentActivityPage,
   DocumentAppend,
@@ -226,6 +236,24 @@ export interface DeviasClient {
     deleteComment(id: string, commentId: string): Promise<void>;
     delete(id: string): Promise<void>;
   };
+  /** Files: the library of the workspace. Their bytes are read at the `url` each carries. */
+  assets: {
+    /** Newest change first. */
+    list(query?: AssetQuery): Promise<AssetPage>;
+    get(id: string): Promise<Asset>;
+    /** Stores a file; its type is detected from the bytes. Over the size limit, or out of storage, is a `VALIDATION` and nothing is stored. */
+    upload(input: AssetUploadInput, options?: AssetUploadOptions): Promise<Asset>;
+    /** Renames or describes a file; its bytes never change. `expectedVersion` makes a change made from an older version a `CONFLICT`. */
+    update(id: string, patch: AssetPatch): Promise<Asset>;
+    /** Refused with `CONFLICT` while something uses the file, unless `force`. */
+    delete(id: string, options?: { force?: boolean }): Promise<void>;
+    /** A link that opens the file without credentials, for 10 minutes unless `ttlSeconds` says otherwise. */
+    link(id: string, input?: AssetLinkInput): Promise<AssetLink>;
+    /** Where the file is used. */
+    usage(id: string): Promise<AssetUsage>;
+    /** What the workspace stores, and its limit. */
+    workspaceUsage(): Promise<AssetsUsage>;
+  };
   /** Tasks: work handed between people and agents, with subtasks, links and a timeline. */
   tasks: {
     /** Most recently changed first (see `sort`), without their text. */
@@ -294,6 +322,20 @@ export class DeviasApiError extends Error {
     super(message);
     this.name = 'DeviasApiError';
   }
+}
+
+/** A file to store: its name and its bytes. */
+export interface AssetUploadInput {
+  name: string;
+  description?: string;
+  body: Blob | ArrayBuffer | Uint8Array | string;
+}
+
+export interface AssetUploadOptions {
+  /** Called as the bytes go out; only the browser client reports progress. */
+  onProgress?: (progress: { loaded: number; total: number }) => void;
+  /** Cancels the upload. */
+  signal?: AbortSignal;
 }
 
 export type ApiErrorCode =

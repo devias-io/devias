@@ -1,8 +1,8 @@
 /**
  * What a link or a mention can point at. A record is `record:<object>/<id>`, a workflow `workflow:<id>`, a document
- * `document:<id>`, a task `task:<id>`, a workspace member `member:<id>` and an agent `agent:<id>`; in a mention node the last five
- * carry a reserved `object` (`workflow`, `document`, `task`, `member`, `agent`), which no object of a workspace may be
- * named. This is the one place that knows all six.
+ * `document:<id>`, a task `task:<id>`, a workspace member `member:<id>`, an agent `agent:<id>` and an asset `asset:<id>`; in a
+ * mention node the last six carry a reserved `object` (`workflow`, `document`, `task`, `member`, `agent`, `asset`), which no
+ * object of a workspace may be named. This is the one place that knows all seven.
  */
 
 /** A mention's `object` for a workflow, which is not an object of the workspace: the id is the workflow's. */
@@ -20,17 +20,21 @@ export const MEMBER_MENTION = 'member';
 /** A mention's `object` for an agent of the workspace: the id is the agent's. */
 export const AGENT_MENTION = 'agent';
 
+/** A mention's `object` for an asset (a file of the workspace's library): the id is the asset's. */
+export const ASSET_MENTION = 'asset';
+
 export type LinkTarget =
   | { kind: 'record'; object: string; id: string }
   | { kind: 'workflow'; id: string }
   | { kind: 'document'; id: string }
   | { kind: 'task'; id: string }
   | { kind: 'member'; id: string }
-  | { kind: 'agent'; id: string };
+  | { kind: 'agent'; id: string }
+  | { kind: 'asset'; id: string };
 
 export type LinkKind = LinkTarget['kind'];
 
-/** `record:<object>/<id>`, `workflow:<id>`, `document:<id>`, `task:<id>`, `member:<id>` or `agent:<id>`: how the agent, Markdown and notifications refer to it. */
+/** `record:<object>/<id>`, `workflow:<id>`, `document:<id>`, `task:<id>`, `member:<id>`, `agent:<id>` or `asset:<id>`: how the agent, Markdown and notifications refer to it. */
 export const linkHref = (target: LinkTarget): string =>
   target.kind === 'record' ? `record:${target.object}/${target.id}` : `${target.kind}:${target.id}`;
 
@@ -40,6 +44,7 @@ const DOCUMENT_LINK = /^document:(\S+)$/;
 const TASK_LINK = /^task:(\S+)$/;
 const MEMBER_LINK = /^member:(\S+)$/;
 const AGENT_LINK = /^agent:(\S+)$/;
+const ASSET_LINK = /^asset:(\S+)$/;
 
 /** The target of a link, or null when it is any other link. */
 export const parseLink = (href: string): LinkTarget | null => {
@@ -75,7 +80,13 @@ export const parseLink = (href: string): LinkTarget | null => {
 
   const agent = AGENT_LINK.exec(href);
 
-  return agent ? { kind: 'agent', id: agent[1] as string } : null;
+  if (agent) {
+    return { kind: 'agent', id: agent[1] as string };
+  }
+
+  const asset = ASSET_LINK.exec(href);
+
+  return asset ? { kind: 'asset', id: asset[1] as string } : null;
 };
 
 /** The `object` a mention node carries for this target. */
@@ -90,7 +101,9 @@ export const mentionObjectOf = (target: LinkTarget): string =>
           ? TASK_MENTION
           : target.kind === 'member'
             ? MEMBER_MENTION
-            : AGENT_MENTION;
+            : target.kind === 'agent'
+              ? AGENT_MENTION
+              : ASSET_MENTION;
 
 /** The attributes of the mention node that points at `target`. */
 export const mentionAttrsOf = (target: LinkTarget, label: string): { object: string; id: string; label: string } => ({
@@ -111,12 +124,14 @@ export const linkOfMention = (object: string, id: string): LinkTarget =>
           ? { kind: 'member', id }
           : object === AGENT_MENTION
             ? { kind: 'agent', id }
-            : { kind: 'record', object, id };
+            : object === ASSET_MENTION
+              ? { kind: 'asset', id }
+              : { kind: 'record', object, id };
 
 const LINK_IN_TEXT =
-  /\[([^\]]*)\]\(((?:record:[^/\s)]+\/[^)\s]+)|(?:workflow:[^)\s]+)|(?:document:[^)\s]+)|(?:task:[^)\s]+)|(?:member:[^)\s]+)|(?:agent:[^)\s]+))\)/g;
+  /\[([^\]]*)\]\(((?:record:[^/\s)]+\/[^)\s]+)|(?:workflow:[^)\s]+)|(?:document:[^)\s]+)|(?:task:[^)\s]+)|(?:member:[^)\s]+)|(?:agent:[^)\s]+)|(?:asset:[^)\s]+))\)/g;
 
-/** A Markdown link to one of the five, `[Label](record:<object>/<id>)`, with where it sits in the text. */
+/** A Markdown link to one of the seven, `[Label](record:<object>/<id>)`, with where it sits in the text. */
 export interface LinkInText {
   label: string;
   target: LinkTarget;
@@ -124,7 +139,7 @@ export interface LinkInText {
   end: number;
 }
 
-/** The links to records, workflows, documents, tasks, members and agents in a text, in order: what a person picked with `@` in a message. */
+/** The links to records, workflows, documents, tasks, members, agents and assets in a text, in order: what a person picked with `@` in a message. */
 export const linksIn = (text: string): LinkInText[] => {
   const found: LinkInText[] = [];
 

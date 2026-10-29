@@ -289,6 +289,7 @@ export const createFakeClient = (
     comments?: DeviasClient['comments'];
     notifications?: DeviasClient['notifications'];
     documents?: DeviasClient['documents'];
+    assets?: DeviasClient['assets'];
     tasks?: DeviasClient['tasks'];
     workflows?: DeviasClient['workflows'];
     modules?: DeviasClient['modules'];
@@ -482,6 +483,24 @@ export const createFakeClient = (
       },
       deleteComment: async () => {},
       delete: async () => {},
+    },
+    assets: options.assets ?? {
+      list: async () => ({ items: [], nextCursor: null, total: 0 }),
+      get: async () => {
+        throw new DeviasApiError(404, 'NOT_FOUND', 'file not found');
+      },
+      upload: async () => {
+        throw new Error('not implemented');
+      },
+      update: async () => {
+        throw new Error('not implemented');
+      },
+      delete: async () => {},
+      link: async () => {
+        throw new Error('not implemented');
+      },
+      usage: async () => ({ records: [], mentions: [], total: 0 }),
+      workspaceUsage: async () => ({ count: 0, bytes: 0, quotaBytes: null }),
     },
     tasks: options.tasks ?? {
       list: async () => ({ items: [], nextCursor: null, total: 0 }),
