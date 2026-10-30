@@ -17,6 +17,7 @@ import { createWorkspaceMiddleware } from './middleware/workspace';
 import { mountActions } from './mount-actions';
 import { registerAiRoutes } from './routes/ai';
 import { registerAssetRoutes } from './routes/assets';
+import { registerAvatarRoutes } from './routes/avatar';
 import { registerCoreRoutes } from './routes/core';
 import { registerEventRoutes } from './routes/events';
 import { registerLogoRoutes } from './routes/logos';
@@ -110,6 +111,7 @@ export const createApp = (deps: AppDeps) => {
   const actor = createActorMiddleware(auth);
   const workspace = createWorkspaceMiddleware(db, engine);
   app.use('/api/me', actor);
+  app.use('/api/me/*', actor);
   app.use('/api/workspaces', actor);
   app.use('/api/workspaces/:workspaceId', actor, workspace);
   app.use('/api/workspaces/:workspaceId/*', actor, workspace);
@@ -129,6 +131,7 @@ export const createApp = (deps: AppDeps) => {
     sessionUserId: async (headers) => (await auth.api.getSession({ headers }))?.user.id ?? null,
   });
   registerAssetRoutes(app, { engine, maxBytes: config.files.maxBytes });
+  registerAvatarRoutes(app, { auth, engine, baseUrl: config.authUrl });
   registerLogoRoutes(app, { registry });
   registerAiRoutes(app, { ai, logger });
   registerModuleRouters(app, { engine, registry });

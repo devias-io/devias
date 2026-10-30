@@ -84,6 +84,13 @@ export interface AuthAdapter {
   signOut: () => Promise<void>;
   /** Updates the signed-in user's own profile. */
   updateUser: (patch: { name?: string }) => Promise<void>;
+  /**
+   * Sets the signed-in user's picture from a file (a PNG, JPEG, WebP, GIF or AVIF of at most `AVATAR_MAX_BYTES`), replacing
+   * the one they had. Absent when the adapter cannot store one, and the Profile page then offers none.
+   */
+  setAvatar?: (file: File) => Promise<void>;
+  /** Removes the signed-in user's picture. Absent together with `setAvatar`. */
+  removeAvatar?: () => Promise<void>;
   /** Changes the signed-in user's sign-in email. */
   changeEmail: (email: string) => Promise<void>;
   organizations: {

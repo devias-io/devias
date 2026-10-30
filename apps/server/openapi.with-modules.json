@@ -7624,6 +7624,16 @@
         },
         "required": ["received", "duplicates"]
       },
+      "Avatar": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "The link of the new picture"
+          }
+        },
+        "required": ["image"]
+      },
       "AiStatus": {
         "type": "object",
         "properties": {
@@ -22081,6 +22091,119 @@
           },
           "416": {
             "description": "The range lies outside the file"
+          }
+        }
+      }
+    },
+    "/api/me/avatar": {
+      "post": {
+        "summary": "Set your picture",
+        "description": "The body is the picture itself (a PNG, JPEG, WebP, GIF or AVIF of at most 5 MB), its name goes in `name`. It replaces the one you had. The answer is the link `user.image` now holds.",
+        "tags": ["account"],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "required": true,
+            "name": "name",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "description": "The picture",
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Avatar"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error or invalid cursor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove your picture",
+        "description": "You have none afterwards, and the file is deleted. A picture that came from somewhere else (a sign-in with Google) is only forgotten.",
+        "tags": ["account"],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Removed"
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
           }
         }
       }

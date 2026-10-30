@@ -232,6 +232,23 @@ export const betterAuthAdapter = (
     return (await response.json()) as T;
   };
 
+  /** A call to the server's own account routes (`/api/me/…`): what Better Auth's client has no call for. */
+  const meRequest = async (path: string, init: RequestInit, failure: string): Promise<void> => {
+    const response = await fetchImpl(`${baseUrl}/api/me${path}`, { credentials: 'include', ...init });
+
+    if (!response.ok) {
+      let message = failure;
+
+      try {
+        message = ((await response.json()) as { error?: { message?: string } }).error?.message ?? failure;
+      } catch {
+        // keep the general message
+      }
+
+      throw new Error(message);
+    }
+  };
+
   return {
     useSession: (): SessionState => {
       const { data, isPending } = client.useSession();
@@ -275,6 +292,13 @@ export const betterAuthAdapter = (
     updateUser: async (patch) => {
       unwrap(await client.updateUser(patch), 'Could not update your profile');
     },
+    setAvatar: (file) =>
+      meRequest(
+        `/avatar?name=${encodeURIComponent(file.name)}`,
+        { method: 'POST', headers: { 'content-type': 'application/octet-stream' }, body: file },
+        'Could not set your picture',
+      ),
+    removeAvatar: () => meRequest('/avatar', { method: 'DELETE' }, 'Could not remove your picture'),
     changeEmail: async (email) => {
       unwrap(await client.changeEmail({ newEmail: email }), 'Could not change your email');
       // Better Auth answers a taken address like a success, so as not to say who has an account: look at the

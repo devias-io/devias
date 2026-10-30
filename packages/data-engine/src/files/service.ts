@@ -111,7 +111,12 @@ export interface FileService {
    */
   write(
     owner: FileOwner,
-    input: { name: string; body: ReadableStream<Uint8Array> | Uint8Array | string },
+    input: {
+      name: string;
+      body: ReadableStream<Uint8Array> | Uint8Array | string;
+      /** A limit lower than the server's, for what is small by nature (a picture of a person). */
+      maxBytes?: number;
+    },
   ): Promise<WrittenFile>;
   /** Adds the row of a written file (the bytes are already in the store), in the caller's transaction. */
   add(
@@ -123,6 +128,14 @@ export interface FileService {
   ): Promise<void>;
   /** Marks the file removed, in the caller's transaction, and says where its bytes are; the caller then `discard`s them. */
   remove(tx: Db, id: string, actor: Actor, now: Date): Promise<string>;
+  /**
+   * Marks a person's own picture removed, and says where its bytes are (to `discard`), or null when the file is not a picture
+   * of theirs: someone else's, a workspace's, an asset, or already gone. Nobody can remove another person's file this way
+   * by naming it.
+   */
+  removePersonal(userId: string, fileId: string, now: Date): Promise<string | null>;
+  /** The link a file is opened at: plain and permanent for a public one, signed for a private one. */
+  url(file: { id: string; workspaceId: string | null; public: boolean }): string;
   /** Removes bytes from the store, quietly: the sweeper finishes what this cannot. */
   discard(prefix: string, what: string): Promise<void>;
   /** A way to read `facts`, for a caller that found the file and checked the right to read it. */
@@ -368,6 +381,7 @@ export const createFileService = (deps: FileServiceDeps): FileService => {
       ...(owner.actor.kind === 'user' ? { userId: owner.actor.id } : {}),
     });
     const prefix = filePrefixOf(scope, id);
+    const limit = Math.min(maxBytes, input.maxBytes ?? maxBytes);
     const reader = streamOf(input.body).getReader();
     const hash = createHash('sha256');
     const head: Buffer[] = [];
@@ -387,9 +401,9 @@ export const createFileService = (deps: FileServiceDeps): FileService => {
 
         size += value.byteLength;
 
-        if (size > maxBytes) {
+        if (size > limit) {
           await reader.cancel().catch(() => undefined);
-          throw validationError(`A file may be at most ${megabytes(maxBytes)}`, { maxBytes });
+          throw validationError(`A file may be at most ${megabytes(limit)}`, { maxBytes: limit });
         }
 
         hash.update(value);
@@ -478,6 +492,25 @@ export const createFileService = (deps: FileServiceDeps): FileService => {
             ${written.size}, ${written.checksum}, ${written.prefix}, ${written.width}, ${written.height}, 1,
             ${by}::jsonb, ${by}::jsonb, ${at}::timestamptz, ${at}::timestamptz)`,
       );
+    },
+
+    url: (file) => urls.url({ id: file.id, workspaceId: file.workspaceId, public: file.public }),
+
+    removePersonal: async (userId, fileId, now) => {
+      if (!UUID.test(fileId)) {
+        return null;
+      }
+
+      const at = now.toISOString();
+      const rows = await runRaw<{ storage_key: string }>(
+        db,
+        sql`UPDATE file SET deleted_at = ${at}::timestamptz, updated_at = ${at}::timestamptz
+          WHERE id = ${fileId}::uuid AND kind = 'avatar' AND workspace_id IS NULL AND deleted_at IS NULL
+            AND created_by->>'kind' = 'user' AND created_by->>'id' = ${userId}
+          RETURNING storage_key`,
+      );
+
+      return rows[0]?.storage_key ?? null;
     },
 
     remove: async (tx, id, actor, now) => {

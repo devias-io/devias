@@ -8,6 +8,7 @@ import type {
   Organization,
   SessionState,
 } from '@devias/core';
+import { AVATAR_MAX_BYTES } from '@devias/core';
 
 /**
  * In-memory `AuthAdapter`. `useSession` is a plain function returning the current state; the studio
@@ -196,6 +197,34 @@ export const createMockAuthAdapter = (options: MockAuthOptions = {}): MockAuthAd
         }
 
         setSession({ ...state, user: { ...state.user, ...patch } });
+      }),
+    setAvatar: async (file) => {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+
+      await run(() => {
+        if (state.status !== 'authenticated' || !state.user) {
+          throw new Error('Not signed in');
+        }
+
+        if (!['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif'].includes(file.type)) {
+          throw new Error('Use a PNG, JPEG, WebP, GIF or AVIF picture');
+        }
+
+        if (file.size > AVATAR_MAX_BYTES) {
+          throw new Error(`A picture may be at most ${AVATAR_MAX_BYTES / 1024 / 1024} MB`);
+        }
+
+        const image = `data:${file.type};base64,${Buffer.from(bytes).toString('base64')}`;
+        setSession({ ...state, user: { ...state.user, image } });
+      });
+    },
+    removeAvatar: () =>
+      run(() => {
+        if (state.status !== 'authenticated' || !state.user) {
+          throw new Error('Not signed in');
+        }
+
+        setSession({ ...state, user: { ...state.user, image: null } });
       }),
     changeEmail: (email) =>
       run(() => {

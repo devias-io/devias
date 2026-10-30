@@ -10309,6 +10309,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/avatar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set your picture
+         * @description The body is the picture itself (a PNG, JPEG, WebP, GIF or AVIF of at most 5 MB), its name goes in `name`. It replaces the one you had. The answer is the link `user.image` now holds.
+         */
+        post: {
+            parameters: {
+                query: {
+                    name: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            /** @description The picture */
+            requestBody: {
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+            responses: {
+                /** @description Set */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Avatar"];
+                    };
+                };
+                /** @description Validation error or invalid cursor */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not authenticated */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not allowed */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        /**
+         * Remove your picture
+         * @description You have none afterwards, and the file is deleted. A picture that came from somewhere else (a sign-in with Google) is only forgotten.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Removed */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not authenticated */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not allowed */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/modules/{moduleId}/logo": {
         parameters: {
             query?: never;
@@ -13313,6 +13425,10 @@ export interface components {
         WebhookResult: {
             received: number;
             duplicates: number;
+        };
+        Avatar: {
+            /** @description The link of the new picture */
+            image: string;
         };
         AiStatus: {
             configured: boolean;
