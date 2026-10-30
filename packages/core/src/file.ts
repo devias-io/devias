@@ -5,6 +5,11 @@
  * id, and `detectFileType` decides the content type from the bytes, never from what the client claimed.
  */
 
+/** The largest account picture. */
+export const AVATAR_MAX_BYTES = 5 * 1024 * 1024;
+/** The side, in pixels, of the square an account picture is shown from. */
+export const AVATAR_SIDE: FileVariantWidth = 256;
+
 export const FILE_KINDS = ['asset', 'logo', 'avatar'] as const;
 export type FileKind = (typeof FILE_KINDS)[number];
 
